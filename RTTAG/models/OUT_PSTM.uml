@@ -1,0 +1,549 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<xmi:XMI xmi:version="2.1" xmlns:xmi="http://schema.omg.org/spec/XMI/2.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:Commands="Commands" xmlns:CompilationDirectiveDeclarations="CompilationDirectiveDeclarations" xmlns:Declarations="Declarations" xmlns:Expressions="Expressions" xmlns:Main="Main" xmlns:Sequencers="Sequencers" xmlns:types="types" xsi:schemaLocation="Commands ../metamodels/C_Metamodel.ecore#/0/Commands CompilationDirectiveDeclarations ../metamodels/C_Metamodel.ecore#/0/CompilationDirectiveDeclarations Declarations ../metamodels/C_Metamodel.ecore#/0/Declarations Expressions ../metamodels/C_Metamodel.ecore#/0/Expressions Main ../metamodels/C_Metamodel.ecore#/0/Main Sequencers ../metamodels/C_Metamodel.ecore#/0/Sequencers types ../metamodels/C_Metamodel.ecore#/0/Types">
+  <Main:Program xmi:id="_V_ERwDd2EeC8IetNuBWmkg" description="C files that represents the test architecture for the SUT">
+    <file xmi:type="Main:C_Unit" xmi:id="_V_ERwTd2EeC8IetNuBWmkg" name="main">
+      <elements xmi:type="Main:DeclarationsBlock" xmi:id="_V_ERwjd2EeC8IetNuBWmkg" name="includes">
+        <directive xmi:type="CompilationDirectiveDeclarations:Include" xmi:id="_V_ERwzd2EeC8IetNuBWmkg" name="&lt;stdio.h>"/>
+        <directive xmi:type="CompilationDirectiveDeclarations:Include" xmi:id="_V_ERxDd2EeC8IetNuBWmkg" name="&quot;FreeRTOS.h&quot;"/>
+        <directive xmi:type="CompilationDirectiveDeclarations:Include" xmi:id="_V_ERxTd2EeC8IetNuBWmkg" name="&quot;TestDriver.h&quot;"/>
+        <directive xmi:type="CompilationDirectiveDeclarations:Include" xmi:id="_V_ERxjd2EeC8IetNuBWmkg" name="&quot;alarme.h&quot;"/>
+        <directive xmi:type="CompilationDirectiveDeclarations:Include" xmi:id="_V_ERxzd2EeC8IetNuBWmkg" name="&quot;ActualEventUtil.h&quot;"/>
+        <directive xmi:type="CompilationDirectiveDeclarations:Include" xmi:id="_V_ERyDd2EeC8IetNuBWmkg" name="&quot;ActualEventTester.h&quot;"/>
+      </elements>
+      <elements xmi:type="Main:Function" xmi:id="_V_ERyTd2EeC8IetNuBWmkg" name="main" return="_V_E5lTd2EeC8IetNuBWmkg">
+        <body xmi:id="_V_ERyjd2EeC8IetNuBWmkg">
+          <element xmi:type="Expressions:FunctionCall" xmi:id="_V_ERyzd2EeC8IetNuBWmkg" name="vStartTest"/>
+          <element xmi:type="Expressions:FunctionCall" xmi:id="_V_ERzDd2EeC8IetNuBWmkg" name="getch"/>
+          <element xmi:type="Commands:ReturnCommand" xmi:id="_V_ERzTd2EeC8IetNuBWmkg">
+            <expression xmi:type="Expressions:ShortLiteral" xmi:id="_V_ERzjd2EeC8IetNuBWmkg"/>
+          </element>
+        </body>
+      </elements>
+    </file>
+    <file xmi:type="Main:C_Unit" xmi:id="_V_ERzzd2EeC8IetNuBWmkg" name="TestDriver">
+      <elements xmi:type="Main:DeclarationsBlock" xmi:id="_V_ER0Dd2EeC8IetNuBWmkg" name="includes">
+        <directive xmi:type="CompilationDirectiveDeclarations:Include" xmi:id="_V_ER0Td2EeC8IetNuBWmkg" name="&lt;stdio.h>"/>
+        <directive xmi:type="CompilationDirectiveDeclarations:Include" xmi:id="_V_ER0jd2EeC8IetNuBWmkg" name="&lt;stdlib.h>"/>
+        <directive xmi:type="CompilationDirectiveDeclarations:Include" xmi:id="_V_ER0zd2EeC8IetNuBWmkg" name="&lt;string.h>"/>
+        <directive xmi:type="CompilationDirectiveDeclarations:Include" xmi:id="_V_ER1Dd2EeC8IetNuBWmkg" name="&quot;FreeRTOS.h&quot;"/>
+        <directive xmi:type="CompilationDirectiveDeclarations:Include" xmi:id="_V_ER1Td2EeC8IetNuBWmkg" name="&quot;task.h&quot;"/>
+        <directive xmi:type="CompilationDirectiveDeclarations:Include" xmi:id="_V_ER1jd2EeC8IetNuBWmkg" name="&quot;semphr.h&quot;"/>
+      </elements>
+      <elements xmi:type="Main:DeclarationsBlock" xmi:id="_V_ER1zd2EeC8IetNuBWmkg" name="includes testing API">
+        <directive xmi:type="CompilationDirectiveDeclarations:Include" xmi:id="_V_ER2Dd2EeC8IetNuBWmkg" name="&quot;ActualEventUtil.h&quot;"/>
+        <directive xmi:type="CompilationDirectiveDeclarations:Include" xmi:id="_V_ER2Td2EeC8IetNuBWmkg" name="&quot;ActualEventTester.h&quot;"/>
+      </elements>
+      <elements xmi:type="Main:DeclarationsBlock" xmi:id="_V_ER2jd2EeC8IetNuBWmkg" name="includes testing execution API">
+        <directive xmi:type="CompilationDirectiveDeclarations:Include" xmi:id="_V_ER2zd2EeC8IetNuBWmkg" name="&quot;SUTInterface.h&quot;"/>
+        <directive xmi:type="CompilationDirectiveDeclarations:Include" xmi:id="_V_ER3Dd2EeC8IetNuBWmkg" name="&quot;TestCase.h&quot;"/>
+        <directive xmi:type="CompilationDirectiveDeclarations:Include" xmi:id="_V_ER3Td2EeC8IetNuBWmkg" name="&quot;TestDriver.h&quot;"/>
+      </elements>
+      <elements xmi:type="Main:DeclarationsBlock" xmi:id="_V_ER3jd2EeC8IetNuBWmkg" name="Prototypes">
+        <declaration xmi:type="Declarations:PrototypeFunctionDeclaration" xmi:id="_V_ER3zd2EeC8IetNuBWmkg" name="createTestContext" modifier="static" type="_V_E5ljd2EeC8IetNuBWmkg"/>
+        <declaration xmi:type="Declarations:PrototypeFunctionDeclaration" xmi:id="_V_ER4Dd2EeC8IetNuBWmkg" name="createOurTestComponents" modifier="static" type="_V_E5ljd2EeC8IetNuBWmkg"/>
+      </elements>
+      <elements xmi:type="Main:DeclarationsBlock" xmi:id="_V_ER4Td2EeC8IetNuBWmkg" name="Prototypes Test Components tasks">
+        <declaration xmi:type="Declarations:PrototypeFunctionDeclaration" xmi:id="_V_ER4jd2EeC8IetNuBWmkg" name="vVoiceSynthesizer_EmulatorTask_TComponent" modifier="static" type="_V_E5ljd2EeC8IetNuBWmkg">
+          <ownedParameter xmi:type="Declarations:SimpleVariableDeclaration" xmi:id="_V_ER4zd2EeC8IetNuBWmkg" name="pvParameters" isAPointer="true" type="_V_E5ljd2EeC8IetNuBWmkg"/>
+        </declaration>
+        <declaration xmi:type="Declarations:PrototypeFunctionDeclaration" xmi:id="_V_ER5Dd2EeC8IetNuBWmkg" name="vControllerLights_EmulatorTask_TComponent" modifier="static" type="_V_E5ljd2EeC8IetNuBWmkg">
+          <ownedParameter xmi:type="Declarations:SimpleVariableDeclaration" xmi:id="_V_ER5Td2EeC8IetNuBWmkg" name="pvParameters" isAPointer="true" type="_V_E5ljd2EeC8IetNuBWmkg"/>
+        </declaration>
+        <declaration xmi:type="Declarations:PrototypeFunctionDeclaration" xmi:id="_V_ER5jd2EeC8IetNuBWmkg" name="vAudibleAlarmGenerator_EmulatorTask_TComponent" modifier="static" type="_V_E5ljd2EeC8IetNuBWmkg">
+          <ownedParameter xmi:type="Declarations:SimpleVariableDeclaration" xmi:id="_V_ER5zd2EeC8IetNuBWmkg" name="pvParameters" isAPointer="true" type="_V_E5ljd2EeC8IetNuBWmkg"/>
+        </declaration>
+      </elements>
+      <elements xmi:type="Main:DeclarationsBlock" xmi:id="_V_ER6Dd2EeC8IetNuBWmkg" name="Handles">
+        <declaration xmi:type="Declarations:SimpleVariableDeclaration" xmi:id="_V_ER6Td2EeC8IetNuBWmkg" name="vComunicationManager_TestContextHandle" type="_V_E5mTd2EeC8IetNuBWmkg"/>
+        <declaration xmi:type="Declarations:SimpleVariableDeclaration" xmi:id="_V_ER6jd2EeC8IetNuBWmkg" name="vVoiceSynthesizer_EmulatorHandle" type="_V_E5mjd2EeC8IetNuBWmkg"/>
+        <declaration xmi:type="Declarations:SimpleVariableDeclaration" xmi:id="_V_ER6zd2EeC8IetNuBWmkg" name="vControllerLights_EmulatorHandle" type="_V_E5mzd2EeC8IetNuBWmkg"/>
+        <declaration xmi:type="Declarations:SimpleVariableDeclaration" xmi:id="_V_ER7Dd2EeC8IetNuBWmkg" name="vAudibleAlarmGenerator_EmulatorHandle" type="_V_E5nDd2EeC8IetNuBWmkg"/>
+      </elements>
+      <elements xmi:type="Main:DeclarationsBlock" xmi:id="_V_ER7Td2EeC8IetNuBWmkg" name="Prototypes Declarations">
+        <declaration xmi:type="Declarations:PrototypeFunctionDeclaration" xmi:id="_V_ER7jd2EeC8IetNuBWmkg" name="vTestConfiguration" modifier="static" type="_V_E5ljd2EeC8IetNuBWmkg"/>
+      </elements>
+      <elements xmi:type="Main:Function" xmi:id="_V_ER7zd2EeC8IetNuBWmkg" name="vStartTest">
+        <body xmi:id="_V_ER8Dd2EeC8IetNuBWmkg">
+          <element xmi:type="Expressions:FunctionCall" xmi:id="_V_ER8Td2EeC8IetNuBWmkg" name="vTestConfiguration"/>
+          <element xmi:type="Expressions:FunctionCall" xmi:id="_V_ER8jd2EeC8IetNuBWmkg" name="vTaskStartScheduler"/>
+        </body>
+      </elements>
+      <elements xmi:type="Main:Function" xmi:id="_V_ER8zd2EeC8IetNuBWmkg" name="vTestConfiguration">
+        <body xmi:id="_V_ER9Dd2EeC8IetNuBWmkg">
+          <element xmi:type="Expressions:FunctionCall" xmi:id="_V_ER9Td2EeC8IetNuBWmkg" name="createTestContext"/>
+          <element xmi:type="Expressions:FunctionCall" xmi:id="_V_ER9jd2EeC8IetNuBWmkg" name="createOurTestComponents"/>
+          <element xmi:type="Expressions:FunctionCall" xmi:id="_V_ER9zd2EeC8IetNuBWmkg" name="createSUTStructures"/>
+        </body>
+      </elements>
+      <elements xmi:type="Main:DeclarationsBlock" xmi:id="_V_ER-Dd2EeC8IetNuBWmkg" name="Scheduler Declaration">
+        <declaration xmi:type="Declarations:SimpleVariableDeclaration" xmi:id="_V_ER-Td2EeC8IetNuBWmkg" name="testCaseExecutionPriorityQueue" isAPointer="true" type="_V_E5lzd2EeC8IetNuBWmkg"/>
+        <declaration xmi:type="Declarations:SimpleVariableDeclaration" xmi:id="_V_ER-jd2EeC8IetNuBWmkg" name="firstOnQueue" type="_V_E5lzd2EeC8IetNuBWmkg"/>
+        <declaration xmi:type="Declarations:SimpleVariableDeclaration" xmi:id="_V_ER-zd2EeC8IetNuBWmkg" name="queueSize" type="_V_E5lzd2EeC8IetNuBWmkg">
+          <initializer xmi:type="Expressions:IntLiteral" xmi:id="_V_ER_Dd2EeC8IetNuBWmkg"/>
+        </declaration>
+        <declaration xmi:type="Declarations:PrototypeFunctionDeclaration" xmi:id="_V_ER_Td2EeC8IetNuBWmkg" name="dequeuePriorityQueue" type="_V_E5lzd2EeC8IetNuBWmkg"/>
+        <declaration xmi:type="Declarations:PrototypeFunctionDeclaration" xmi:id="_V_ER_jd2EeC8IetNuBWmkg" name="enqueuePriorityQueue" type="_V_E5lzd2EeC8IetNuBWmkg">
+          <ownedParameter xmi:type="Declarations:SimpleVariableDeclaration" xmi:id="_V_ER_zd2EeC8IetNuBWmkg" name="priority" type="_V_E5lzd2EeC8IetNuBWmkg"/>
+        </declaration>
+      </elements>
+      <elements xmi:type="Main:FunctionsBlock" xmi:id="_V_ESADd2EeC8IetNuBWmkg" name="Priority Queue routines">
+        <function xmi:id="_V_ESATd2EeC8IetNuBWmkg" name="dequeuePriorityQueue" return="_V_E5lzd2EeC8IetNuBWmkg">
+          <body xmi:id="_V_ESAjd2EeC8IetNuBWmkg">
+            <element xmi:type="Commands:IfCommand" xmi:id="_V_ESAzd2EeC8IetNuBWmkg">
+              <condition xmi:type="Expressions:ComposedConditionalExpression" xmi:id="_V_ESBDd2EeC8IetNuBWmkg" operator="GREATER">
+                <term xmi:type="Expressions:BinaryArithmeticExpression" xmi:id="_V_ESBTd2EeC8IetNuBWmkg" operator="MINUS">
+                  <extraOperand xmi:type="Expressions:VariableAccess" xmi:id="_V_ESBjd2EeC8IetNuBWmkg" name="firstOnQueue" variable="_V_ER-jd2EeC8IetNuBWmkg"/>
+                </term>
+                <term xmi:type="Expressions:IntLiteral" xmi:id="_V_ESBzd2EeC8IetNuBWmkg"/>
+              </condition>
+              <thenBlock xmi:id="_V_ESCDd2EeC8IetNuBWmkg">
+                <element xmi:type="Commands:ReturnCommand" xmi:id="_V_ESCTd2EeC8IetNuBWmkg">
+                  <expression xmi:type="Expressions:ArrayAccess" xmi:id="_V_ESCjd2EeC8IetNuBWmkg" name="testCaseExecutionPriorityQueue">
+                    <index xmi:type="Expressions:BinaryArithmeticExpression" xmi:id="_V_ESCzd2EeC8IetNuBWmkg" operator="MODULE">
+                      <operand xmi:type="Expressions:UnaryArithmeticExpression" xmi:id="_V_ESDDd2EeC8IetNuBWmkg" operator="PLUS_PLUS">
+                        <operand xmi:type="Expressions:VariableAccess" xmi:id="_V_ESDTd2EeC8IetNuBWmkg" name="firstOnQueue" variable="_V_ER-jd2EeC8IetNuBWmkg"/>
+                      </operand>
+                    </index>
+                  </expression>
+                </element>
+              </thenBlock>
+              <elseBlock xmi:id="_V_ESDjd2EeC8IetNuBWmkg">
+                <element xmi:type="Commands:ReturnCommand" xmi:id="_V_ESDzd2EeC8IetNuBWmkg">
+                  <expression xmi:type="Expressions:UnaryArithmeticExpression" xmi:id="_V_ESEDd2EeC8IetNuBWmkg">
+                    <operand xmi:type="Expressions:IntLiteral" xmi:id="_V_ESETd2EeC8IetNuBWmkg" value="1"/>
+                  </expression>
+                </element>
+              </elseBlock>
+            </element>
+          </body>
+        </function>
+        <function xmi:id="_V_ESEjd2EeC8IetNuBWmkg" name="enqueuePriorityQueue" return="_V_E5ljd2EeC8IetNuBWmkg">
+          <body xmi:id="_V_ESEzd2EeC8IetNuBWmkg">
+            <element xmi:type="Commands:IfCommand" xmi:id="_V_ESFDd2EeC8IetNuBWmkg">
+              <condition xmi:type="Expressions:ComposedConditionalExpression" xmi:id="_V_ESFTd2EeC8IetNuBWmkg" operator="LESS">
+                <term xmi:type="Expressions:BinaryArithmeticExpression" xmi:id="_V_ESFjd2EeC8IetNuBWmkg" operator="MINUS">
+                  <operand xmi:type="Expressions:VariableAccess" xmi:id="_V_ESFzd2EeC8IetNuBWmkg" name="queueSize" variable="_V_ER-zd2EeC8IetNuBWmkg"/>
+                  <extraOperand xmi:type="Expressions:VariableAccess" xmi:id="_V_ESGDd2EeC8IetNuBWmkg" name="firstOnQueue" variable="_V_ER-jd2EeC8IetNuBWmkg"/>
+                </term>
+                <term xmi:type="Expressions:VariableAccess" xmi:id="_V_ESGTd2EeC8IetNuBWmkg" name="utpMAX_SIZE_FLOW_QUEUE"/>
+              </condition>
+              <thenBlock xmi:id="_V_ESGjd2EeC8IetNuBWmkg">
+                <element xmi:type="Commands:Assignment" xmi:id="_V_ESGzd2EeC8IetNuBWmkg">
+                  <id xmi:type="Expressions:ArrayAccess" xmi:id="_V_ESHDd2EeC8IetNuBWmkg" name="testCaseExecutionPriorityQueue">
+                    <index xmi:type="Expressions:BinaryArithmeticExpression" xmi:id="_V_ESHTd2EeC8IetNuBWmkg" operator="MODULE">
+                      <operand xmi:type="Expressions:VariableAccess" xmi:id="_V_ESHjd2EeC8IetNuBWmkg" name="queueSize" variable="_V_ER-zd2EeC8IetNuBWmkg"/>
+                      <extraOperand xmi:type="Expressions:VariableAccess" xmi:id="_V_ESHzd2EeC8IetNuBWmkg" name="utpMAX_SIZE_FLOW_QUEUE"/>
+                    </index>
+                  </id>
+                  <expression xmi:type="Expressions:VariableAccess" xmi:id="_V_ESIDd2EeC8IetNuBWmkg" name="priority" variable="_V_ESITd2EeC8IetNuBWmkg"/>
+                </element>
+              </thenBlock>
+            </element>
+          </body>
+          <ownedParameter xmi:type="Declarations:SimpleVariableDeclaration" xmi:id="_V_ESITd2EeC8IetNuBWmkg" name="priority" type="_V_E5lzd2EeC8IetNuBWmkg"/>
+        </function>
+        <function xmi:id="_V_ESIjd2EeC8IetNuBWmkg" name="vScheduler" return="_V_E5ljd2EeC8IetNuBWmkg">
+          <body xmi:id="_V_ESIzd2EeC8IetNuBWmkg"/>
+          <ownedParameter xmi:type="Declarations:SimpleVariableDeclaration" xmi:id="_V_ESJDd2EeC8IetNuBWmkg" name="testCaseFile" isAPointer="true" type="_V_E5mDd2EeC8IetNuBWmkg"/>
+        </function>
+      </elements>
+      <elements xmi:type="Main:Function" xmi:id="_V_ESJTd2EeC8IetNuBWmkg" name="xArbiter">
+        <body xmi:id="_V_ESJjd2EeC8IetNuBWmkg"/>
+        <ownedParameter xmi:type="Declarations:SimpleVariableDeclaration" xmi:id="_V_ESJzd2EeC8IetNuBWmkg" name="testCaseFile" isAPointer="true" type="_V_E5mDd2EeC8IetNuBWmkg"/>
+        <ownedParameter xmi:type="Declarations:SimpleVariableDeclaration" xmi:id="_V_ESKDd2EeC8IetNuBWmkg" name="logFile" isAPointer="true" type="_V_E5mDd2EeC8IetNuBWmkg"/>
+      </elements>
+      <elements xmi:type="Main:FunctionsBlock" xmi:id="_V_ESKTd2EeC8IetNuBWmkg" name="Test Context Task">
+        <function xmi:id="_V_ESKjd2EeC8IetNuBWmkg" name="createTestContext" modifier="static" return="_V_E5ljd2EeC8IetNuBWmkg">
+          <body xmi:id="_V_ESKzd2EeC8IetNuBWmkg">
+            <element xmi:type="Expressions:FunctionCall" xmi:id="_V_ESLDd2EeC8IetNuBWmkg" name="xTaskCreate">
+              <argument xmi:type="Expressions:VariableAccess" xmi:id="_V_ESLTd2EeC8IetNuBWmkg" name="vTestContext"/>
+              <argument xmi:type="Expressions:StringLiteral" xmi:id="_V_ESLjd2EeC8IetNuBWmkg" value="TestContext"/>
+              <argument xmi:type="Expressions:ConstantAccess" xmi:id="_V_ESLzd2EeC8IetNuBWmkg" name="TEST_STACK_SIZE"/>
+              <argument xmi:type="Expressions:ConstantAccess" xmi:id="_V_ESMDd2EeC8IetNuBWmkg" name="NULL"/>
+              <argument xmi:type="Expressions:BinaryArithmeticExpression" xmi:id="_V_ESMTd2EeC8IetNuBWmkg">
+                <operand xmi:type="Expressions:ConstantAccess" xmi:id="_V_ESMjd2EeC8IetNuBWmkg" name="tskIDLE_PRIORITY"/>
+                <extraOperand xmi:type="Expressions:IntLiteral" xmi:id="_V_ESMzd2EeC8IetNuBWmkg" value="1"/>
+              </argument>
+              <argument xmi:type="Expressions:PointerVariableAccess" xmi:id="_V_ESNDd2EeC8IetNuBWmkg" name="vTestContextHandle"/>
+            </element>
+          </body>
+        </function>
+        <function xmi:id="_V_ESNTd2EeC8IetNuBWmkg" name="vSetTestContextPriority" return="_V_E5ljd2EeC8IetNuBWmkg">
+          <body xmi:id="_V_ESNjd2EeC8IetNuBWmkg">
+            <element xmi:type="Expressions:FunctionCall" xmi:id="_V_ESNzd2EeC8IetNuBWmkg" name="vTaskPrioritySet">
+              <argument xmi:type="Expressions:VariableAccess" xmi:id="_V_ESODd2EeC8IetNuBWmkg" name="vTestContextHandle"/>
+              <argument xmi:type="Expressions:VariableAccess" xmi:id="_V_ESOTd2EeC8IetNuBWmkg" name="number" variable="_V_ESOjd2EeC8IetNuBWmkg"/>
+            </element>
+          </body>
+          <ownedParameter xmi:type="Declarations:SimpleVariableDeclaration" xmi:id="_V_ESOjd2EeC8IetNuBWmkg" name="number" type="_V_E5lzd2EeC8IetNuBWmkg"/>
+        </function>
+        <function xmi:id="_V_ESOzd2EeC8IetNuBWmkg" name="vTestContext" return="_V_E5ljd2EeC8IetNuBWmkg">
+          <body xmi:id="_V_ESPDd2EeC8IetNuBWmkg">
+            <element xmi:type="Declarations:SimpleVariableDeclaration" xmi:id="_V_ESPTd2EeC8IetNuBWmkg" name="i" type="_V_E5lzd2EeC8IetNuBWmkg">
+              <fragment xmi:id="_V_ESPjd2EeC8IetNuBWmkg" name="j"/>
+            </element>
+            <element xmi:type="Commands:ForCommand" xmi:id="_V_ESPzd2EeC8IetNuBWmkg">
+              <body xmi:id="_V_ESQDd2EeC8IetNuBWmkg">
+                <element xmi:type="Commands:ForCommand" xmi:id="_V_ESQTd2EeC8IetNuBWmkg">
+                  <body xmi:id="_V_ESQjd2EeC8IetNuBWmkg">
+                    <element xmi:type="Commands:ForCommand" xmi:id="_V_ESQzd2EeC8IetNuBWmkg">
+                      <body xmi:id="_V_ESRDd2EeC8IetNuBWmkg"/>
+                      <inicializer xmi:type="Commands:Assignment" xmi:id="_V_ESRTd2EeC8IetNuBWmkg">
+                        <id xmi:type="Expressions:VariableAccess" xmi:id="_V_ESRjd2EeC8IetNuBWmkg" name="j" variable="_V_ESPjd2EeC8IetNuBWmkg"/>
+                        <expression xmi:type="Expressions:IntLiteral" xmi:id="_V_ESRzd2EeC8IetNuBWmkg"/>
+                      </inicializer>
+                      <expression xmi:type="Expressions:ComposedConditionalExpression" xmi:id="_V_ESSDd2EeC8IetNuBWmkg" operator="LESS">
+                        <term xmi:type="Expressions:VariableAccess" xmi:id="_V_ESSTd2EeC8IetNuBWmkg" name="j" variable="_V_ESPjd2EeC8IetNuBWmkg"/>
+                        <term xmi:type="Expressions:IntLiteral" xmi:id="_V_ESSjd2EeC8IetNuBWmkg" value="30000"/>
+                      </expression>
+                      <updater xmi:type="Expressions:UnaryArithmeticExpression" xmi:id="_V_ESSzd2EeC8IetNuBWmkg" operator="PLUS_PLUS">
+                        <operand xmi:type="Expressions:VariableAccess" xmi:id="_V_ESTDd2EeC8IetNuBWmkg" name="j" variable="_V_ESPjd2EeC8IetNuBWmkg"/>
+                      </updater>
+                    </element>
+                  </body>
+                  <inicializer xmi:type="Commands:Assignment" xmi:id="_V_ESTTd2EeC8IetNuBWmkg">
+                    <id xmi:type="Expressions:VariableAccess" xmi:id="_V_ESTjd2EeC8IetNuBWmkg" name="i" variable="_V_ESPTd2EeC8IetNuBWmkg"/>
+                    <expression xmi:type="Expressions:IntLiteral" xmi:id="_V_ESTzd2EeC8IetNuBWmkg"/>
+                  </inicializer>
+                  <expression xmi:type="Expressions:ComposedConditionalExpression" xmi:id="_V_ESUDd2EeC8IetNuBWmkg" operator="LESS">
+                    <term xmi:type="Expressions:VariableAccess" xmi:id="_V_ESUTd2EeC8IetNuBWmkg" name="i" variable="_V_ESPTd2EeC8IetNuBWmkg"/>
+                    <term xmi:type="Expressions:IntLiteral" xmi:id="_V_ESUjd2EeC8IetNuBWmkg" value="30000"/>
+                  </expression>
+                  <updater xmi:type="Expressions:UnaryArithmeticExpression" xmi:id="_V_ESUzd2EeC8IetNuBWmkg" operator="PLUS_PLUS">
+                    <operand xmi:type="Expressions:VariableAccess" xmi:id="_V_ESVDd2EeC8IetNuBWmkg" name="i" variable="_V_ESPTd2EeC8IetNuBWmkg"/>
+                  </updater>
+                </element>
+              </body>
+            </element>
+            <element xmi:type="Expressions:FunctionCall" xmi:id="_V_ESVTd2EeC8IetNuBWmkg" name="vTestCase">
+              <argument xmi:type="Expressions:StringLiteral" xmi:id="_V_ESVjd2EeC8IetNuBWmkg" value="TestCase.txt"/>
+              <argument xmi:type="Expressions:StringLiteral" xmi:id="_V_ESVzd2EeC8IetNuBWmkg" value="logTC1"/>
+            </element>
+            <element xmi:type="Expressions:FunctionCall" xmi:id="_V_ESWDd2EeC8IetNuBWmkg" name="vTaskEndScheduler"/>
+          </body>
+          <ownedParameter xmi:type="Declarations:SimpleVariableDeclaration" xmi:id="_V_ESWTd2EeC8IetNuBWmkg" name="pvParameters" isAPointer="true" type="_V_E5ljd2EeC8IetNuBWmkg"/>
+        </function>
+      </elements>
+      <elements xmi:type="Main:DeclarationsBlock" xmi:id="_V_ESWjd2EeC8IetNuBWmkg">
+        <declaration xmi:type="Declarations:SimpleVariableDeclaration" xmi:id="_V_ESWzd2EeC8IetNuBWmkg" name="xVoiceSynthesizer_EmulatorTask_State" type="_V_E5nTd2EeC8IetNuBWmkg">
+          <initializer xmi:type="Expressions:IntLiteral" xmi:id="_V_ESXDd2EeC8IetNuBWmkg"/>
+        </declaration>
+        <declaration xmi:type="Declarations:SimpleVariableDeclaration" xmi:id="_V_ESXTd2EeC8IetNuBWmkg" name="xControllerLights_EmulatorTask_State" type="_V_E5njd2EeC8IetNuBWmkg">
+          <initializer xmi:type="Expressions:IntLiteral" xmi:id="_V_ESXjd2EeC8IetNuBWmkg"/>
+        </declaration>
+        <declaration xmi:type="Declarations:SimpleVariableDeclaration" xmi:id="_V_ESXzd2EeC8IetNuBWmkg" name="xAudibleAlarmGenerator_EmulatorTask_State" type="_V_E5nzd2EeC8IetNuBWmkg">
+          <initializer xmi:type="Expressions:IntLiteral" xmi:id="_V_ESYDd2EeC8IetNuBWmkg"/>
+        </declaration>
+      </elements>
+      <elements xmi:type="Main:FunctionsBlock" xmi:id="_V_ESYTd2EeC8IetNuBWmkg">
+        <function xmi:id="_V_ESYjd2EeC8IetNuBWmkg" name="setVoiceSynthesizer_EmulatorTask_State" return="_V_E5ljd2EeC8IetNuBWmkg">
+          <body xmi:id="_V_ESYzd2EeC8IetNuBWmkg">
+            <element xmi:type="Commands:Assignment" xmi:id="_V_ESZDd2EeC8IetNuBWmkg">
+              <id xmi:type="Expressions:VariableAccess" xmi:id="_V_ESZTd2EeC8IetNuBWmkg" name="xVoiceSynthesizer_EmulatorTask_State" variable="_V_ESWzd2EeC8IetNuBWmkg"/>
+              <expression xmi:type="Expressions:VariableAccess" xmi:id="_V_E40Dd2EeC8IetNuBWmkg" name="newValue" variable="_V_E40Td2EeC8IetNuBWmkg"/>
+            </element>
+          </body>
+          <ownedParameter xmi:type="Declarations:SimpleVariableDeclaration" xmi:id="_V_E40Td2EeC8IetNuBWmkg" name="newValue" type="_V_E5nTd2EeC8IetNuBWmkg"/>
+        </function>
+        <function xmi:id="_V_E40jd2EeC8IetNuBWmkg" name="setControllerLights_EmulatorTask_State" return="_V_E5ljd2EeC8IetNuBWmkg">
+          <body xmi:id="_V_E40zd2EeC8IetNuBWmkg">
+            <element xmi:type="Commands:Assignment" xmi:id="_V_E41Dd2EeC8IetNuBWmkg">
+              <id xmi:type="Expressions:VariableAccess" xmi:id="_V_E41Td2EeC8IetNuBWmkg" name="xControllerLights_EmulatorTask_State" variable="_V_ESXTd2EeC8IetNuBWmkg"/>
+              <expression xmi:type="Expressions:VariableAccess" xmi:id="_V_E41jd2EeC8IetNuBWmkg" name="newValue" variable="_V_E41zd2EeC8IetNuBWmkg"/>
+            </element>
+          </body>
+          <ownedParameter xmi:type="Declarations:SimpleVariableDeclaration" xmi:id="_V_E41zd2EeC8IetNuBWmkg" name="newValue" type="_V_E5nTd2EeC8IetNuBWmkg"/>
+        </function>
+        <function xmi:id="_V_E42Dd2EeC8IetNuBWmkg" name="setAudibleAlarmGenerator_EmulatorTask_State" return="_V_E5ljd2EeC8IetNuBWmkg">
+          <body xmi:id="_V_E42Td2EeC8IetNuBWmkg">
+            <element xmi:type="Commands:Assignment" xmi:id="_V_E42jd2EeC8IetNuBWmkg">
+              <id xmi:type="Expressions:VariableAccess" xmi:id="_V_E42zd2EeC8IetNuBWmkg" name="xAudibleAlarmGenerator_EmulatorTask_State" variable="_V_ESXzd2EeC8IetNuBWmkg"/>
+              <expression xmi:type="Expressions:VariableAccess" xmi:id="_V_E43Dd2EeC8IetNuBWmkg" name="newValue" variable="_V_E43Td2EeC8IetNuBWmkg"/>
+            </element>
+          </body>
+          <ownedParameter xmi:type="Declarations:SimpleVariableDeclaration" xmi:id="_V_E43Td2EeC8IetNuBWmkg" name="newValue" type="_V_E5nTd2EeC8IetNuBWmkg"/>
+        </function>
+      </elements>
+      <elements xmi:type="Main:FunctionsBlock" xmi:id="_V_E43jd2EeC8IetNuBWmkg" name="TEST COMPONENT definitions">
+        <function xmi:id="_V_E43zd2EeC8IetNuBWmkg" name="createOurTestComponents" modifier="static" return="_V_E5ljd2EeC8IetNuBWmkg">
+          <body xmi:id="_V_E44Dd2EeC8IetNuBWmkg">
+            <element xmi:type="Expressions:FunctionCall" xmi:id="_V_E44Td2EeC8IetNuBWmkg" name="xTaskCreate">
+              <argument xmi:type="Expressions:VariableAccess" xmi:id="_V_E44jd2EeC8IetNuBWmkg" name="vVoiceSynthesizer_EmulatorTask_TComponent" variable="_V_ER4jd2EeC8IetNuBWmkg"/>
+              <argument xmi:type="Expressions:StringLiteral" xmi:id="_V_E44zd2EeC8IetNuBWmkg" value="VoiceSynthesizer_Emulator"/>
+              <argument xmi:type="Expressions:ConstantAccess" xmi:id="_V_E45Dd2EeC8IetNuBWmkg" name="TEST_STACK_SIZE"/>
+              <argument xmi:type="Expressions:PointerVariableAccess" xmi:id="_V_E45Td2EeC8IetNuBWmkg" name="xVoiceSynthesizer_EmulatorTask_State" variable="_V_ESWzd2EeC8IetNuBWmkg"/>
+              <argument xmi:type="Expressions:ConstantAccess" xmi:id="_V_E45jd2EeC8IetNuBWmkg" name="tskIDLE_PRIORITY"/>
+              <argument xmi:type="Expressions:PointerVariableAccess" xmi:id="_V_E45zd2EeC8IetNuBWmkg" name="vVoiceSynthesizer_EmulatorHandle" variable="_V_ER6jd2EeC8IetNuBWmkg"/>
+            </element>
+            <element xmi:type="Expressions:FunctionCall" xmi:id="_V_E46Dd2EeC8IetNuBWmkg" name="xTaskCreate">
+              <argument xmi:type="Expressions:VariableAccess" xmi:id="_V_E46Td2EeC8IetNuBWmkg" name="vControllerLights_EmulatorTask_TComponent" variable="_V_ER5Dd2EeC8IetNuBWmkg"/>
+              <argument xmi:type="Expressions:StringLiteral" xmi:id="_V_E46jd2EeC8IetNuBWmkg" value="ControllerLights_Emulator"/>
+              <argument xmi:type="Expressions:ConstantAccess" xmi:id="_V_E46zd2EeC8IetNuBWmkg" name="TEST_STACK_SIZE"/>
+              <argument xmi:type="Expressions:PointerVariableAccess" xmi:id="_V_E47Dd2EeC8IetNuBWmkg" name="xControllerLights_EmulatorTask_State" variable="_V_ESXTd2EeC8IetNuBWmkg"/>
+              <argument xmi:type="Expressions:ConstantAccess" xmi:id="_V_E47Td2EeC8IetNuBWmkg" name="tskIDLE_PRIORITY"/>
+              <argument xmi:type="Expressions:PointerVariableAccess" xmi:id="_V_E47jd2EeC8IetNuBWmkg" name="vControllerLights_EmulatorHandle" variable="_V_ER6zd2EeC8IetNuBWmkg"/>
+            </element>
+            <element xmi:type="Expressions:FunctionCall" xmi:id="_V_E47zd2EeC8IetNuBWmkg" name="xTaskCreate">
+              <argument xmi:type="Expressions:VariableAccess" xmi:id="_V_E48Dd2EeC8IetNuBWmkg" name="vAudibleAlarmGenerator_EmulatorTask_TComponent" variable="_V_ER5jd2EeC8IetNuBWmkg"/>
+              <argument xmi:type="Expressions:StringLiteral" xmi:id="_V_E48Td2EeC8IetNuBWmkg" value="AudibleAlarmGenerator_Emulator"/>
+              <argument xmi:type="Expressions:ConstantAccess" xmi:id="_V_E48jd2EeC8IetNuBWmkg" name="TEST_STACK_SIZE"/>
+              <argument xmi:type="Expressions:PointerVariableAccess" xmi:id="_V_E48zd2EeC8IetNuBWmkg" name="xAudibleAlarmGenerator_EmulatorTask_State" variable="_V_ESXzd2EeC8IetNuBWmkg"/>
+              <argument xmi:type="Expressions:ConstantAccess" xmi:id="_V_E49Dd2EeC8IetNuBWmkg" name="tskIDLE_PRIORITY"/>
+              <argument xmi:type="Expressions:PointerVariableAccess" xmi:id="_V_E49Td2EeC8IetNuBWmkg" name="vAudibleAlarmGenerator_EmulatorHandle" variable="_V_ER7Dd2EeC8IetNuBWmkg"/>
+            </element>
+          </body>
+        </function>
+        <function xmi:id="_V_E49jd2EeC8IetNuBWmkg" name="vVoiceSynthesizer_EmulatorTask_TComponent">
+          <body xmi:id="_V_E49zd2EeC8IetNuBWmkg">
+            <element xmi:type="Commands:ForCommand" xmi:id="_V_E4-Dd2EeC8IetNuBWmkg">
+              <body xmi:id="_V_E4-Td2EeC8IetNuBWmkg">
+                <element xmi:type="Commands:SwitchCommand" xmi:id="_V_E4-jd2EeC8IetNuBWmkg">
+                  <variable xmi:type="Declarations:SimpleVariableDeclaration" xmi:id="_V_E4-zd2EeC8IetNuBWmkg" name="myState" type="_V_E5nTd2EeC8IetNuBWmkg">
+                    <initializer xmi:type="Expressions:CastExpression" xmi:id="_V_E4_Dd2EeC8IetNuBWmkg" type="_V_E5nTd2EeC8IetNuBWmkg">
+                      <expression xmi:type="Expressions:VariableAccess" xmi:id="_V_E4_Td2EeC8IetNuBWmkg" name="pvParameters" variable="_V_E5DDd2EeC8IetNuBWmkg"/>
+                    </initializer>
+                  </variable>
+                  <case xmi:id="_V_E4_jd2EeC8IetNuBWmkg">
+                    <value xmi:type="Expressions:IntLiteral" xmi:id="_V_E4_zd2EeC8IetNuBWmkg" value="1"/>
+                    <body xmi:id="_V_E5ADd2EeC8IetNuBWmkg">
+                      <element xmi:type="Sequencers:Break" xmi:id="_V_E5ATd2EeC8IetNuBWmkg"/>
+                    </body>
+                  </case>
+                  <case xmi:id="_V_E5Ajd2EeC8IetNuBWmkg">
+                    <value xmi:type="Expressions:IntLiteral" xmi:id="_V_E5Azd2EeC8IetNuBWmkg" value="2"/>
+                    <body xmi:id="_V_E5BDd2EeC8IetNuBWmkg">
+                      <element xmi:type="Sequencers:Break" xmi:id="_V_E5BTd2EeC8IetNuBWmkg"/>
+                    </body>
+                  </case>
+                  <default xmi:id="_V_E5Bjd2EeC8IetNuBWmkg">
+                    <body xmi:id="_V_E5Bzd2EeC8IetNuBWmkg">
+                      <element xmi:type="Sequencers:Break" xmi:id="_V_E5CDd2EeC8IetNuBWmkg"/>
+                    </body>
+                  </default>
+                </element>
+                <element xmi:type="Expressions:FunctionCall" xmi:id="_V_E5CTd2EeC8IetNuBWmkg" name="vTaskPrioritySet">
+                  <argument xmi:type="Expressions:VariableAccess" xmi:id="_V_E5Cjd2EeC8IetNuBWmkg" name="vVoiceSynthesizer_EmulatorHandle" variable="_V_ER6jd2EeC8IetNuBWmkg"/>
+                  <argument xmi:type="Expressions:FunctionCall" xmi:id="_V_E5Czd2EeC8IetNuBWmkg" name="vTaskPrioritySet"/>
+                </element>
+              </body>
+            </element>
+          </body>
+          <ownedParameter xmi:type="Declarations:SimpleVariableDeclaration" xmi:id="_V_E5DDd2EeC8IetNuBWmkg" name="pvParameters" isAPointer="true" type="_V_E5ljd2EeC8IetNuBWmkg"/>
+        </function>
+        <function xmi:id="_V_E5DTd2EeC8IetNuBWmkg" name="vControllerLights_EmulatorTask_TComponent">
+          <body xmi:id="_V_E5Djd2EeC8IetNuBWmkg">
+            <element xmi:type="Commands:ForCommand" xmi:id="_V_E5Dzd2EeC8IetNuBWmkg">
+              <body xmi:id="_V_E5EDd2EeC8IetNuBWmkg">
+                <element xmi:type="Commands:SwitchCommand" xmi:id="_V_E5ETd2EeC8IetNuBWmkg">
+                  <variable xmi:type="Declarations:SimpleVariableDeclaration" xmi:id="_V_E5Ejd2EeC8IetNuBWmkg" name="myState" type="_V_E5nTd2EeC8IetNuBWmkg">
+                    <initializer xmi:type="Expressions:CastExpression" xmi:id="_V_E5Ezd2EeC8IetNuBWmkg" type="_V_E5nTd2EeC8IetNuBWmkg">
+                      <expression xmi:type="Expressions:VariableAccess" xmi:id="_V_E5FDd2EeC8IetNuBWmkg" name="pvParameters" variable="_V_E5Izd2EeC8IetNuBWmkg"/>
+                    </initializer>
+                  </variable>
+                  <case xmi:id="_V_E5FTd2EeC8IetNuBWmkg">
+                    <value xmi:type="Expressions:IntLiteral" xmi:id="_V_E5Fjd2EeC8IetNuBWmkg" value="1"/>
+                    <body xmi:id="_V_E5Fzd2EeC8IetNuBWmkg">
+                      <element xmi:type="Sequencers:Break" xmi:id="_V_E5GDd2EeC8IetNuBWmkg"/>
+                    </body>
+                  </case>
+                  <case xmi:id="_V_E5GTd2EeC8IetNuBWmkg">
+                    <value xmi:type="Expressions:IntLiteral" xmi:id="_V_E5Gjd2EeC8IetNuBWmkg" value="2"/>
+                    <body xmi:id="_V_E5Gzd2EeC8IetNuBWmkg">
+                      <element xmi:type="Sequencers:Break" xmi:id="_V_E5HDd2EeC8IetNuBWmkg"/>
+                    </body>
+                  </case>
+                  <default xmi:id="_V_E5HTd2EeC8IetNuBWmkg">
+                    <body xmi:id="_V_E5Hjd2EeC8IetNuBWmkg">
+                      <element xmi:type="Sequencers:Break" xmi:id="_V_E5Hzd2EeC8IetNuBWmkg"/>
+                    </body>
+                  </default>
+                </element>
+                <element xmi:type="Expressions:FunctionCall" xmi:id="_V_E5IDd2EeC8IetNuBWmkg" name="vTaskPrioritySet">
+                  <argument xmi:type="Expressions:VariableAccess" xmi:id="_V_E5ITd2EeC8IetNuBWmkg" name="vControllerLights_EmulatorHandle" variable="_V_ER6zd2EeC8IetNuBWmkg"/>
+                  <argument xmi:type="Expressions:FunctionCall" xmi:id="_V_E5Ijd2EeC8IetNuBWmkg" name="vTaskPrioritySet"/>
+                </element>
+              </body>
+            </element>
+          </body>
+          <ownedParameter xmi:type="Declarations:SimpleVariableDeclaration" xmi:id="_V_E5Izd2EeC8IetNuBWmkg" name="pvParameters" isAPointer="true" type="_V_E5ljd2EeC8IetNuBWmkg"/>
+        </function>
+        <function xmi:id="_V_E5JDd2EeC8IetNuBWmkg" name="vAudibleAlarmGenerator_EmulatorTask_TComponent">
+          <body xmi:id="_V_E5JTd2EeC8IetNuBWmkg">
+            <element xmi:type="Commands:ForCommand" xmi:id="_V_E5Jjd2EeC8IetNuBWmkg">
+              <body xmi:id="_V_E5Jzd2EeC8IetNuBWmkg">
+                <element xmi:type="Expressions:FunctionCall" xmi:id="_V_E5KDd2EeC8IetNuBWmkg" name="vTaskPrioritySet">
+                  <argument xmi:type="Expressions:VariableAccess" xmi:id="_V_E5KTd2EeC8IetNuBWmkg" name="vAudibleAlarmGenerator_EmulatorHandle" variable="_V_ER7Dd2EeC8IetNuBWmkg"/>
+                  <argument xmi:type="Expressions:FunctionCall" xmi:id="_V_E5Kjd2EeC8IetNuBWmkg" name="vTaskPrioritySet"/>
+                </element>
+                <element xmi:type="Commands:SwitchCommand" xmi:id="_V_E5Kzd2EeC8IetNuBWmkg">
+                  <variable xmi:type="Declarations:SimpleVariableDeclaration" xmi:id="_V_E5LDd2EeC8IetNuBWmkg" name="myState" type="_V_E5nTd2EeC8IetNuBWmkg">
+                    <initializer xmi:type="Expressions:CastExpression" xmi:id="_V_E5LTd2EeC8IetNuBWmkg" type="_V_E5nTd2EeC8IetNuBWmkg">
+                      <expression xmi:type="Expressions:VariableAccess" xmi:id="_V_E5Ljd2EeC8IetNuBWmkg" name="pvParameters" variable="_V_E5Njd2EeC8IetNuBWmkg"/>
+                    </initializer>
+                  </variable>
+                  <case xmi:id="_V_E5Lzd2EeC8IetNuBWmkg">
+                    <value xmi:type="Expressions:IntLiteral" xmi:id="_V_E5MDd2EeC8IetNuBWmkg" value="1"/>
+                    <body xmi:id="_V_E5MTd2EeC8IetNuBWmkg">
+                      <element xmi:type="Sequencers:Break" xmi:id="_V_E5Mjd2EeC8IetNuBWmkg"/>
+                    </body>
+                  </case>
+                  <default xmi:id="_V_E5Mzd2EeC8IetNuBWmkg">
+                    <body xmi:id="_V_E5NDd2EeC8IetNuBWmkg">
+                      <element xmi:type="Sequencers:Break" xmi:id="_V_E5NTd2EeC8IetNuBWmkg"/>
+                    </body>
+                  </default>
+                </element>
+              </body>
+            </element>
+          </body>
+          <ownedParameter xmi:type="Declarations:SimpleVariableDeclaration" xmi:id="_V_E5Njd2EeC8IetNuBWmkg" name="pvParameters" isAPointer="true" type="_V_E5ljd2EeC8IetNuBWmkg"/>
+        </function>
+      </elements>
+    </file>
+    <file xmi:type="Main:C_Unit" xmi:id="_V_E5Nzd2EeC8IetNuBWmkg" name="TestCase">
+      <elements xmi:type="Main:DeclarationsBlock" xmi:id="_V_E5ODd2EeC8IetNuBWmkg" name="includes">
+        <directive xmi:type="CompilationDirectiveDeclarations:Include" xmi:id="_V_E5OTd2EeC8IetNuBWmkg" name="&lt;stdio.h>"/>
+        <directive xmi:type="CompilationDirectiveDeclarations:Include" xmi:id="_V_E5Ojd2EeC8IetNuBWmkg" name="&lt;stdlib.h>"/>
+      </elements>
+      <elements xmi:type="Main:DeclarationsBlock" xmi:id="_V_E5Ozd2EeC8IetNuBWmkg" name="includes SO API">
+        <directive xmi:type="CompilationDirectiveDeclarations:Include" xmi:id="_V_E5PDd2EeC8IetNuBWmkg" name="&quot;FreeRTOS.h&quot;"/>
+        <directive xmi:type="CompilationDirectiveDeclarations:Include" xmi:id="_V_E5PTd2EeC8IetNuBWmkg" name="&quot;task.h&quot;"/>
+      </elements>
+      <elements xmi:type="Main:DeclarationsBlock" xmi:id="_V_E5Pjd2EeC8IetNuBWmkg" name="includes Testing API">
+        <directive xmi:type="CompilationDirectiveDeclarations:Include" xmi:id="_V_E5Pzd2EeC8IetNuBWmkg" name="&quot;ActualEventUtil.h&quot;"/>
+        <directive xmi:type="CompilationDirectiveDeclarations:Include" xmi:id="_V_E5QDd2EeC8IetNuBWmkg" name="&quot;ActualEventTester.h&quot;"/>
+      </elements>
+      <elements xmi:type="Main:DeclarationsBlock" xmi:id="_V_E5QTd2EeC8IetNuBWmkg" name="includes Test execution API">
+        <directive xmi:type="CompilationDirectiveDeclarations:Include" xmi:id="_V_E5Qjd2EeC8IetNuBWmkg" name="&quot;SUTInterface.h&quot;"/>
+        <directive xmi:type="CompilationDirectiveDeclarations:Include" xmi:id="_V_E5Qzd2EeC8IetNuBWmkg" name="&quot;TestDriver.h&quot;"/>
+        <directive xmi:type="CompilationDirectiveDeclarations:Include" xmi:id="_V_E5RDd2EeC8IetNuBWmkg" name="&quot;TestCase.h&quot;"/>
+      </elements>
+      <elements xmi:type="Main:Function" xmi:id="_V_E5RTd2EeC8IetNuBWmkg" name="vTestCase" return="_V_E5ljd2EeC8IetNuBWmkg">
+        <body xmi:id="_V_E5Rjd2EeC8IetNuBWmkg">
+          <element xmi:type="Expressions:FunctionCall" xmi:id="_V_E5Rzd2EeC8IetNuBWmkg" name="vScheduler">
+            <argument xmi:type="Expressions:VariableAccess" xmi:id="_V_E5SDd2EeC8IetNuBWmkg" name="testCaseFile" variable="_V_E5Ujd2EeC8IetNuBWmkg"/>
+          </element>
+          <element xmi:type="Expressions:FunctionCall" xmi:id="_V_E5STd2EeC8IetNuBWmkg" name="vOrganizePreConditions">
+            <argument xmi:type="Expressions:VariableAccess" xmi:id="_V_E5Sjd2EeC8IetNuBWmkg" name="testCaseFile" variable="_V_E5Ujd2EeC8IetNuBWmkg"/>
+          </element>
+          <element xmi:type="Expressions:FunctionCall" xmi:id="_V_E5Szd2EeC8IetNuBWmkg" name="vSetTestContextPriority">
+            <argument xmi:type="Expressions:FunctionCall" xmi:id="_V_E5TDd2EeC8IetNuBWmkg" name="dequeuePriorityQueue"/>
+          </element>
+          <element xmi:type="Expressions:FunctionCall" xmi:id="_V_E5TTd2EeC8IetNuBWmkg" name="xLogObserversResult">
+            <argument xmi:type="Expressions:VariableAccess" xmi:id="_V_E5Tjd2EeC8IetNuBWmkg" name="logFile" variable="_V_E5Uzd2EeC8IetNuBWmkg"/>
+          </element>
+          <element xmi:type="Expressions:FunctionCall" xmi:id="_V_E5Tzd2EeC8IetNuBWmkg" name="xArbiter">
+            <argument xmi:type="Expressions:VariableAccess" xmi:id="_V_E5UDd2EeC8IetNuBWmkg" name="testCaseFile" variable="_V_E5Ujd2EeC8IetNuBWmkg"/>
+            <argument xmi:type="Expressions:VariableAccess" xmi:id="_V_E5UTd2EeC8IetNuBWmkg" name="logFile" variable="_V_E5Uzd2EeC8IetNuBWmkg"/>
+          </element>
+        </body>
+        <ownedParameter xmi:type="Declarations:SimpleVariableDeclaration" xmi:id="_V_E5Ujd2EeC8IetNuBWmkg" name="testCaseFile" isAPointer="true" type="_V_E5mDd2EeC8IetNuBWmkg"/>
+        <ownedParameter xmi:type="Declarations:SimpleVariableDeclaration" xmi:id="_V_E5Uzd2EeC8IetNuBWmkg" name="logFile" isAPointer="true" type="_V_E5mDd2EeC8IetNuBWmkg"/>
+      </elements>
+    </file>
+    <file xmi:type="Main:C_Unit" xmi:id="_V_E5VDd2EeC8IetNuBWmkg" name="SUTInterface">
+      <elements xmi:type="Main:DeclarationsBlock" xmi:id="_V_E5VTd2EeC8IetNuBWmkg" name="includes">
+        <directive xmi:type="CompilationDirectiveDeclarations:Include" xmi:id="_V_E5Vjd2EeC8IetNuBWmkg" name="&lt;stdio.h>"/>
+        <directive xmi:type="CompilationDirectiveDeclarations:Include" xmi:id="_V_E5Vzd2EeC8IetNuBWmkg" name="&lt;stdlib.h>"/>
+      </elements>
+      <elements xmi:type="Main:DeclarationsBlock" xmi:id="_V_E5WDd2EeC8IetNuBWmkg" name="includes SO API">
+        <directive xmi:type="CompilationDirectiveDeclarations:Include" xmi:id="_V_E5WTd2EeC8IetNuBWmkg" name="&quot;FreeRTOS.h&quot;"/>
+        <directive xmi:type="CompilationDirectiveDeclarations:Include" xmi:id="_V_E5Wjd2EeC8IetNuBWmkg" name="&quot;task.h&quot;"/>
+      </elements>
+      <elements xmi:type="Main:DeclarationsBlock" xmi:id="_V_E5Wzd2EeC8IetNuBWmkg" name="includes Testing API">
+        <directive xmi:type="CompilationDirectiveDeclarations:Include" xmi:id="_V_E5XDd2EeC8IetNuBWmkg" name="&quot;ActualEventUtil.h&quot;"/>
+        <directive xmi:type="CompilationDirectiveDeclarations:Include" xmi:id="_V_E5XTd2EeC8IetNuBWmkg" name="&quot;ActualEventTester.h&quot;"/>
+      </elements>
+      <elements xmi:type="Main:DeclarationsBlock" xmi:id="_V_E5Xjd2EeC8IetNuBWmkg" name="includes Test execution API">
+        <declaration xmi:type="CompilationDirectiveDeclarations:Include" xmi:id="_V_E5Xzd2EeC8IetNuBWmkg" name="&quot;SUTInterface.h&quot;"/>
+        <declaration xmi:type="CompilationDirectiveDeclarations:Include" xmi:id="_V_E5YDd2EeC8IetNuBWmkg" name="&quot;TestDriver.h&quot;"/>
+        <declaration xmi:type="CompilationDirectiveDeclarations:Include" xmi:id="_V_E5YTd2EeC8IetNuBWmkg" name="&quot;TestCase.h&quot;"/>
+      </elements>
+      <elements xmi:type="Main:DeclarationsBlock" xmi:id="_V_E5Yjd2EeC8IetNuBWmkg" name="includes Test execution API">
+        <directive xmi:type="CompilationDirectiveDeclarations:Include" xmi:id="_V_E5Yzd2EeC8IetNuBWmkg" name="&quot;SUT.h&quot;"/>
+      </elements>
+      <elements xmi:type="Main:FunctionsBlock" xmi:id="_V_E5ZDd2EeC8IetNuBWmkg" name="TEST CONTEXT">
+        <function xmi:id="_V_E5ZTd2EeC8IetNuBWmkg" name="setTestContext_PRIORITY" return="_V_E5ljd2EeC8IetNuBWmkg">
+          <body xmi:id="_V_E5Zjd2EeC8IetNuBWmkg">
+            <element xmi:type="Expressions:FunctionCall" xmi:id="_V_E5Zzd2EeC8IetNuBWmkg" name="vSetTestContextPriority">
+              <argument xmi:type="Expressions:VariableAccess" xmi:id="_V_E5aDd2EeC8IetNuBWmkg" name="number" variable="_V_E5aTd2EeC8IetNuBWmkg"/>
+            </element>
+          </body>
+          <ownedParameter xmi:type="Declarations:SimpleVariableDeclaration" xmi:id="_V_E5aTd2EeC8IetNuBWmkg" name="number" type="_V_E5lzd2EeC8IetNuBWmkg"/>
+        </function>
+        <function xmi:id="_V_E5ajd2EeC8IetNuBWmkg" name="getNextPriority" return="_V_E5lzd2EeC8IetNuBWmkg">
+          <body xmi:id="_V_E5azd2EeC8IetNuBWmkg">
+            <element xmi:type="Commands:ReturnCommand" xmi:id="_V_E5bDd2EeC8IetNuBWmkg">
+              <expression xmi:type="Expressions:FunctionCall" xmi:id="_V_E5bTd2EeC8IetNuBWmkg" name="dequeuePriorityQueue"/>
+            </element>
+          </body>
+        </function>
+      </elements>
+    </file>
+    <file xmi:type="Main:H_Unit" xmi:id="_V_E5bjd2EeC8IetNuBWmkg" name="TestCase">
+      <declaration xmi:type="CompilationDirectiveDeclarations:Ifdef" xmi:id="_V_E5bzd2EeC8IetNuBWmkg" name="TESTCASE_H_INCLUDED" end="_V_E5dDd2EeC8IetNuBWmkg">
+        <declaration xmi:type="CompilationDirectiveDeclarations:Define" xmi:id="_V_E5cDd2EeC8IetNuBWmkg" name="TESTCASE_H_INCLUDED"/>
+        <declaration xmi:type="Declarations:PrototypeFunctionDeclaration" xmi:id="_V_E5cTd2EeC8IetNuBWmkg" name="vTestCase" type="_V_E5ljd2EeC8IetNuBWmkg">
+          <ownedParameter xmi:type="Declarations:SimpleVariableDeclaration" xmi:id="_V_E5cjd2EeC8IetNuBWmkg" name="testCaseFile" isAPointer="true" type="_V_E5mDd2EeC8IetNuBWmkg"/>
+          <ownedParameter xmi:type="Declarations:SimpleVariableDeclaration" xmi:id="_V_E5czd2EeC8IetNuBWmkg" name="logFile" isAPointer="true" type="_V_E5mDd2EeC8IetNuBWmkg"/>
+        </declaration>
+        <declaration xmi:type="CompilationDirectiveDeclarations:Endif" xmi:id="_V_E5dDd2EeC8IetNuBWmkg"/>
+      </declaration>
+    </file>
+    <file xmi:type="Main:H_Unit" xmi:id="_V_E5dTd2EeC8IetNuBWmkg" name="SUTInterface">
+      <declaration xmi:type="CompilationDirectiveDeclarations:Ifdef" xmi:id="_V_E5djd2EeC8IetNuBWmkg" name="SUT_INTERFACE_H_INCLUDED" end="_V_E5fzd2EeC8IetNuBWmkg">
+        <declaration xmi:type="CompilationDirectiveDeclarations:Define" xmi:id="_V_E5dzd2EeC8IetNuBWmkg" name="SUT_INTERFACE_H_INCLUDED"/>
+        <declaration xmi:type="CompilationDirectiveDeclarations:Define" xmi:id="_V_E5eDd2EeC8IetNuBWmkg" name="TEST_CONTEXT_PRIORITY" value="tskIDLE_PRIORITY + 5"/>
+        <declaration xmi:type="CompilationDirectiveDeclarations:Define" xmi:id="_V_E5eTd2EeC8IetNuBWmkg" name="TEST_STACK_SIZE" value="( ( unsigned portSHORT ) configMINIMAL_STACK_SIZE * 2)"/>
+        <declaration xmi:type="CompilationDirectiveDeclarations:Define" xmi:id="_V_E5ejd2EeC8IetNuBWmkg" name="utpMAX_SIZE_FLOW_QUEUE" value="15"/>
+        <declaration xmi:type="Declarations:PrototypeFunctionDeclaration" xmi:id="_V_E5ezd2EeC8IetNuBWmkg" name="vSetTestContextPriority" type="_V_E5ljd2EeC8IetNuBWmkg">
+          <ownedParameter xmi:type="Declarations:SimpleVariableDeclaration" xmi:id="_V_E5fDd2EeC8IetNuBWmkg" name="priority" type="_V_E5lzd2EeC8IetNuBWmkg"/>
+        </declaration>
+        <declaration xmi:type="Declarations:PrototypeFunctionDeclaration" xmi:id="_V_E5fTd2EeC8IetNuBWmkg" name="getNextPriority" type="_V_E5lzd2EeC8IetNuBWmkg"/>
+        <declaration xmi:type="Declarations:PrototypeFunctionDeclaration" xmi:id="_V_E5fjd2EeC8IetNuBWmkg" name="createSUTStructures" type="_V_E5ljd2EeC8IetNuBWmkg"/>
+        <declaration xmi:type="CompilationDirectiveDeclarations:Endif" xmi:id="_V_E5fzd2EeC8IetNuBWmkg"/>
+      </declaration>
+    </file>
+    <file xmi:type="Main:H_Unit" xmi:id="_V_E5gDd2EeC8IetNuBWmkg" name="TestDriver">
+      <declaration xmi:type="CompilationDirectiveDeclarations:Ifdef" xmi:id="_V_E5gTd2EeC8IetNuBWmkg" name="TESTDRIVER_H_INCLUDED" end="_V_E5jjd2EeC8IetNuBWmkg">
+        <declaration xmi:type="CompilationDirectiveDeclarations:Define" xmi:id="_V_E5gjd2EeC8IetNuBWmkg" name="TESTDRIVER_H_INCLUDED"/>
+        <declaration xmi:type="Declarations:PrototypeFunctionDeclaration" xmi:id="_V_E5gzd2EeC8IetNuBWmkg" name="vStartTest" type="_V_E5ljd2EeC8IetNuBWmkg"/>
+        <declaration xmi:type="Declarations:PrototypeFunctionDeclaration" xmi:id="_V_E5hDd2EeC8IetNuBWmkg" name="vTestContext" type="_V_E5ljd2EeC8IetNuBWmkg">
+          <ownedParameter xmi:type="Declarations:SimpleVariableDeclaration" xmi:id="_V_E5hTd2EeC8IetNuBWmkg" name="pvParameters" isAPointer="true" type="_V_E5ljd2EeC8IetNuBWmkg"/>
+        </declaration>
+        <declaration xmi:type="Declarations:PrototypeFunctionDeclaration" xmi:id="_V_E5hjd2EeC8IetNuBWmkg" name="vSetTestContextPriority" type="_V_E5ljd2EeC8IetNuBWmkg">
+          <ownedParameter xmi:type="Declarations:SimpleVariableDeclaration" xmi:id="_V_E5hzd2EeC8IetNuBWmkg" name="number" type="_V_E5lzd2EeC8IetNuBWmkg"/>
+        </declaration>
+        <declaration xmi:type="Declarations:PrototypeFunctionDeclaration" xmi:id="_V_E5iDd2EeC8IetNuBWmkg" name="vScheduler" type="_V_E5ljd2EeC8IetNuBWmkg">
+          <ownedParameter xmi:type="Declarations:SimpleVariableDeclaration" xmi:id="_V_E5iTd2EeC8IetNuBWmkg" name="testCaseFile" isAPointer="true" type="_V_E5mDd2EeC8IetNuBWmkg"/>
+        </declaration>
+        <declaration xmi:type="Declarations:PrototypeFunctionDeclaration" xmi:id="_V_E5ijd2EeC8IetNuBWmkg" name="xArbiter" type="_V_E5lzd2EeC8IetNuBWmkg">
+          <ownedParameter xmi:type="Declarations:SimpleVariableDeclaration" xmi:id="_V_E5izd2EeC8IetNuBWmkg" name="testCaseFile" isAPointer="true" type="_V_E5mDd2EeC8IetNuBWmkg"/>
+          <ownedParameter xmi:type="Declarations:SimpleVariableDeclaration" xmi:id="_V_E5jDd2EeC8IetNuBWmkg" name="logFile" isAPointer="true" type="_V_E5mDd2EeC8IetNuBWmkg"/>
+        </declaration>
+        <declaration xmi:type="Declarations:PrototypeFunctionDeclaration" xmi:id="_V_E5jTd2EeC8IetNuBWmkg" name="dequeuePriorityQueue" type="_V_E5lzd2EeC8IetNuBWmkg"/>
+        <declaration xmi:type="CompilationDirectiveDeclarations:Endif" xmi:id="_V_E5jjd2EeC8IetNuBWmkg"/>
+        <declaration xmi:type="Declarations:PrototypeFunctionDeclaration" xmi:id="_V_E5jzd2EeC8IetNuBWmkg" name="setVoiceSynthesizer_EmulatorTask_State" type="_V_E5ljd2EeC8IetNuBWmkg">
+          <ownedParameter xmi:type="Declarations:SimpleVariableDeclaration" xmi:id="_V_E5kDd2EeC8IetNuBWmkg" name="newValue" type="_V_E5nTd2EeC8IetNuBWmkg"/>
+        </declaration>
+        <declaration xmi:type="Declarations:PrototypeFunctionDeclaration" xmi:id="_V_E5kTd2EeC8IetNuBWmkg" name="setControllerLights_EmulatorTask_State" type="_V_E5ljd2EeC8IetNuBWmkg">
+          <ownedParameter xmi:type="Declarations:SimpleVariableDeclaration" xmi:id="_V_E5kjd2EeC8IetNuBWmkg" name="newValue" type="_V_E5nTd2EeC8IetNuBWmkg"/>
+        </declaration>
+        <declaration xmi:type="Declarations:PrototypeFunctionDeclaration" xmi:id="_V_E5kzd2EeC8IetNuBWmkg" name="setAudibleAlarmGenerator_EmulatorTask_State" type="_V_E5ljd2EeC8IetNuBWmkg">
+          <ownedParameter xmi:type="Declarations:SimpleVariableDeclaration" xmi:id="_V_E5lDd2EeC8IetNuBWmkg" name="newValue" type="_V_E5nTd2EeC8IetNuBWmkg"/>
+        </declaration>
+      </declaration>
+    </file>
+  </Main:Program>
+  <types:Short xmi:id="_V_E5lTd2EeC8IetNuBWmkg"/>
+  <types:Void xmi:id="_V_E5ljd2EeC8IetNuBWmkg"/>
+  <types:Int xmi:id="_V_E5lzd2EeC8IetNuBWmkg"/>
+  <types:Char xmi:id="_V_E5mDd2EeC8IetNuBWmkg"/>
+  <types:FromHeader xmi:id="_V_E5mTd2EeC8IetNuBWmkg" name="xTaskHandle"/>
+  <types:FromHeader xmi:id="_V_E5mjd2EeC8IetNuBWmkg" name="xTaskHandle"/>
+  <types:FromHeader xmi:id="_V_E5mzd2EeC8IetNuBWmkg" name="xTaskHandle"/>
+  <types:FromHeader xmi:id="_V_E5nDd2EeC8IetNuBWmkg" name="xTaskHandle"/>
+  <types:FromHeader xmi:id="_V_E5nTd2EeC8IetNuBWmkg" name="portSHORT"/>
+  <types:FromHeader xmi:id="_V_E5njd2EeC8IetNuBWmkg" name="portSHORT"/>
+  <types:FromHeader xmi:id="_V_E5nzd2EeC8IetNuBWmkg" name="portSHORT"/>
+</xmi:XMI>

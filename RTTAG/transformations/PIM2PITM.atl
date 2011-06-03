@@ -1,0 +1,974 @@
+module PIM2PITM;
+
+create OUT : UML2 from IN : UML2, ProfileRTD : UML2, ProfileUTP_RT: UML2;
+
+helper def : DataModel : UML2!Model = '';
+
+helper def : InterruptionKindType : UML2!Enumeration = '';
+
+helper def : RealTimeOpsInterface : UML2!Interface = '';
+
+helper def : ArbiterInt : UML2!Interface = '';
+
+helper def : SchedulerInt : UML2!Interface = '';
+
+helper def : booleanType : UML2!PrimitiveType = '';
+
+helper def : StringType : UML2!PrimitiveType = '';
+
+helper def : IntegerType : UML2!PrimitiveType = '';
+
+helper def : floatType : UML2!PrimitiveType = '';
+
+helper def : CollectionType : UML2!PrimitiveType = '';
+
+helper def : TimeType : UML2!PrimitiveType = '';
+
+helper def : SUT : UML2!Class = '';
+
+helper def : SubSUT : UML2!Class = '';
+
+helper def : TContext : UML2!Class = '';
+
+helper def : TestComponents : Set(UML2!Class) = Set{};
+
+helper def : transitions : Set(UML2!Transition) = Set{};
+
+helper def : collabTest : UML2!Collaboration = '';
+
+helper def : numberTC : Integer = 1;
+
+helper def: isInOperator: Boolean = false;
+
+helper def: Operator: UML2!InteractionOperand = '';
+
+-- Rule witch start the generation process of the test architecture
+-- for that, it's necessary that exists in the input model one comment with the word 'start'
+rule Coment {
+	from s : UML2!"uml::Comment" (thisModule.inElements->includes(s))
+	to t : UML2!"uml::Comment" (
+        __xmiID__ <- s.__xmiID__,
+        body <- s.body,
+        eAnnotations <- s.eAnnotations,
+        ownedComment <- s.ownedComment,
+        annotatedElement <- s.annotatedElement)
+	do{
+		if (s.getBody() = 'start'){
+			thisModule.DataModel <- UML2!Model->allInstances()->select(m | m.toString() = 'OUT!Data')->first();
+				self.createTestPackage();
+		}
+	}
+}
+
+-- Rule which create the test package
+rule createTestPackage(){
+	to tPack: UML2! "uml::Package"(
+		name <- 'TestPackage')
+	do{
+		thisModule.DataModel.packagedElement <- thisModule.DataModel.packagedElement->including(tPack);
+		self.createVerdictEnum (tPack);
+		self.createInterruptionKindEnum (tPack);
+		self.createPrimitiveTypes (tPack);
+		self.createLogFile (tPack);
+		self.createArbiter(tPack);
+		self.createRealTimeOpsInterface(tPack);
+		self.createScheduler(tPack);
+		self.createTimer(tPack);
+		self.createTestContext(tPack);
+		
+		self.testCaseGeneration(UML2!StateMachine->allInstances()->select(s | s.name = 'Teste 2')->first(), tPack);
+		 
+	}	
+}
+
+-- Rule that create the enumeration wich has the possibles verdicts of the test cases
+rule createVerdictEnum(pack: UML2!Package){
+	to verEnum: UML2!Enumeration(
+		name<- 'Verdict',
+		ownedLiteral <- Set{pass,fail,inconclusive, error} ),
+		
+	pass : UML2!EnumerationLiteral(
+		name <- 'pass'),
+		
+	fail : UML2!EnumerationLiteral(
+		name <- 'fail'),
+		
+	inconclusive : UML2!EnumerationLiteral(
+		name <- 'inconclusive'),
+
+	error : UML2!EnumerationLiteral(
+		name <- 'error'	)
+	do{
+		pack.packagedElement <- pack.packagedElement->including(verEnum);
+	}
+}
+
+-- Rule that create the enumeration wich has the possibles interruptions
+rule createInterruptionKindEnum(pack: UML2!Package){
+	to intEnum: UML2!Enumeration(
+		name<- 'InterruptionKind' )
+		
+	do{
+		thisModule.InterruptionKindType <- intEnum;
+		pack.packagedElement <- pack.packagedElement->including(intEnum);
+	}
+}
+
+rule createPrimitiveTypes (pack: UML2!Package){
+	to boolType: UML2!PrimitiveType(
+		name <- 'Boolean'),
+		
+	strType: UML2!PrimitiveType(
+		name <- 'String'),
+		
+	intType: UML2!PrimitiveType(
+		name <- 'Integer'),
+		
+	floatType: UML2!PrimitiveType(
+		name <- 'float'),
+		
+	ColType: UML2!PrimitiveType(
+		name <- 'Collection'),
+		
+	time: UML2!PrimitiveType(
+		name <- 'TimeUnit')
+	do{
+		thisModule.booleanType <- boolType;
+		thisModule.StringType <- strType;
+		thisModule.IntegerType <- intType;
+		thisModule.floatType <- floatType;
+		thisModule.CollectionType <- ColType;
+		thisModule.TimeType <- time;
+		pack.packagedElement <- pack.packagedElement->including(boolType);
+		pack.packagedElement <- pack.packagedElement->including(strType);
+		pack.packagedElement <- pack.packagedElement->including(intType);
+		pack.packagedElement <- pack.packagedElement->including(floatType);
+		pack.packagedElement <- pack.packagedElement->including(ColType);
+		pack.packagedElement <- pack.packagedElement->including(time);
+	}
+}
+
+-- Rule that create a LogFile class
+rule createLogFile(pack: UML2!Package){
+	to logClass: UML2!Class(
+		name <- 'LogFile',
+		ownedAttribute <- Set{nm, desc}),
+	
+		nm: UML2!Property(
+			name<- 'name',
+			type<- thisModule.StringType),
+			
+		desc: UML2!Property(
+			name<- 'description',
+			type<- thisModule.StringType)
+	do{
+		pack.packagedElement <- pack.packagedElement->including(logClass);
+	}
+}
+
+-- Rule that create the test class wich implements the Arbiter RT interface
+rule createArbiter(pack: UML2!Package){
+	using {
+		verType : UML2!Type = UML2!Enumeration.allInstancesFrom('OUT')->select(e | e.name = 'Verdict')->first();
+		logType : UML2!Type = UML2!Class.allInstancesFrom('OUT')->select(e | e.name = 'LogFile')->first();
+	}
+	to arbInt: UML2!Interface(
+		name <- 'ArbiterRT',
+		ownedOperation <- Set{df, cv}),
+	
+		df: UML2!Operation(
+			name <- 'defineVerdict',
+			ownedParameter <- Set{expectedRes, executionRes, returnDefineVerdict}),
+			
+		expectedRes: UML2!Parameter(
+			type <- logType,
+			name <- 'expectedResults'),
+			
+		executionRes: UML2!Parameter(
+			type <- logType,
+			name <- 'executionResults'),
+		
+		returnDefineVerdict:UML2!Parameter(
+			type <- verType,
+			direction <- #return),
+		
+		cv: UML2!Operation(
+			name <- 'compareValues',
+			ownedParameter <- Set{expectedVal, executionVal, returnCompareValues}),
+			
+		expectedVal: UML2!Parameter(
+			type <- thisModule.StringType,
+			name <- 'expectedValue'),
+			
+		executionVal: UML2!Parameter(
+			type <- thisModule.StringType,
+			name <- 'executionValue'),
+		
+		returnCompareValues:UML2!Parameter(
+			type <- thisModule.booleanType,
+			direction <- #return)
+		
+	do{
+		thisModule.ArbiterInt <- arbInt;
+		pack.packagedElement <- pack.packagedElement->including(arbInt);
+		self.createDefaultArbiterStateMachine (arbInt, pack);
+	}
+}
+
+-- Rule that create the test class wich implements the Scheduler RT interface
+rule createDefaultArbiterStateMachine(arbClass: UML2!Class, pack: UML2!Package){
+	using{
+		opDV: UML2!Operation = arbClass.ownedOperation->select(o | o.name = 'defineVerdict');
+		opCV: UML2!Operation = arbClass.ownedOperation->select(o | o.name = 'compareValues');
+	}
+	to sm: UML2!StateMachine(
+		region <- reg),
+		
+		reg: UML2!Region(
+			subvertex <- Set{begin, idle, runn, choise, pass, fail, incon, err, final},
+			transition <- Set{beg_idle, idle_runn, runn_choise, runn_pass, choise_run, choise_fail, choise_incon, choise_err, pass_final, fail_final, incon_final, err_final}),
+		
+		begin: UML2!Pseudostate(
+			kind <- #initial),
+			
+		idle: UML2!State(
+			name <- 'Idle'),
+			
+		beg_idle: UML2!Transition(
+			source <- begin,
+			target <- idle,
+			effect <- fb),
+		
+		fb: UML2!FunctionBehavior(
+			name <- 'numPassed = 0'),
+			
+		runn: UML2!State(
+			name <- 'Running'),
+		
+		idle_runn: UML2!Transition(
+			source <- idle,
+			target <- runn,
+			trigger <- trig1),
+		
+		trig1: UML2!Trigger(
+			event <- ev1),
+			
+		ev1: UML2!CallEvent(
+			operation <- opDV),
+			
+		choise: UML2!Pseudostate(
+			kind <- #choice),
+			
+		runn_choise: UML2!Transition(
+			source <- runn,
+			target <- choise,
+			trigger <- trig2),
+		
+		trig2: UML2!Trigger(
+			event <- ev2),
+			
+		ev2: UML2!CallEvent(
+			operation <- opCV),
+			
+		pass: UML2!State(
+			name <- 'pass'),
+		
+		runn_pass: UML2!Transition(
+			source <- runn,
+			target <- pass,
+			guard <- const1),
+			
+		const1: UML2!Constraint(
+			specification <- oe1),
+		
+		oe1: UML2!OpaqueExpression(
+			body <- 'numPassed == numOfComparations'),
+			
+		fail: UML2!State(
+			name <- 'fail'),
+			
+		choise_run: UML2!Transition(
+			source <- choise,
+			target <- runn,
+			effect <- fb2),
+		
+		fb2: UML2!FunctionBehavior(
+			name <- 'numPassed++'),
+		
+		choise_fail: UML2!Transition(
+			source <- choise,
+			target <- fail,
+			guard <- const2),
+			
+		const2: UML2!Constraint(
+			specification <- oe2),
+		
+		oe2: UML2!OpaqueExpression(
+			body <- 'result == fail'),
+			
+		incon: UML2!State(
+			name <- 'inconclusive'),
+		
+		choise_incon: UML2!Transition(
+			source <- choise,
+			target <- incon,
+			guard <- const3),
+			
+		const3: UML2!Constraint(
+			specification <- oe3),
+		
+		oe3: UML2!OpaqueExpression(
+			body <- 'result == inconclusive'),
+			
+		err: UML2!State(
+			name <- 'error'),
+		
+		choise_err: UML2!Transition(
+			source <- choise,
+			target <- err,
+			guard <- const4),
+			
+		const4: UML2!Constraint(
+			specification <- oe4),
+		
+		oe4: UML2!OpaqueExpression(
+			body <- 'result == error'),
+			
+		final: UML2!FinalState,
+		
+		pass_final: UML2!Transition(
+			source <- pass,
+			target <- final),
+		
+		fail_final: UML2!Transition(
+			source <- fail,
+			target <- final),
+		
+		incon_final: UML2!Transition(
+			source <- incon,
+			target <- final),
+			
+		err_final: UML2!Transition(
+			source <- err,
+			target <- final)
+	do{
+		pack.packagedElement <- pack.packagedElement->including(sm)->including(ev1)->including(ev2);
+	}
+			
+}
+-- Rule that create the test interface of the Scheduler
+rule createScheduler(pack: UML2!Package){
+	to scheInt: UML2!Interface(
+		name <- 'SchedulerRT',
+		ownedOperation <- Set{opc, atcbe, tcf, stc, dabb}),
+	
+		opc: UML2!Operation(
+			name <- 'organizePreConditions',
+			ownedParameter <- Set{tos}),
+			
+		tos: UML2!Parameter(
+			name <- 'testObjects',
+			type <- thisModule.CollectionType),
+		
+		tcf: UML2!Operation(
+			name <- 'testConfiguration',
+			ownedParameter <- Set{tos2}),
+			
+		tos2: UML2!Parameter(
+			name <- 'testObjects',
+			type <- thisModule.CollectionType),
+		
+		stc: UML2!Operation(
+			name <- 'startTestCase',
+			ownedParameter <- Set{tcX}),
+			
+		tcX: UML2!Parameter(
+			name <- 'testCaseX',
+			type <- thisModule.StringType),
+		
+		atcbe: UML2!Operation(
+			name <- 'allowTestCaseBehaviourExecution'),
+			
+		dabb: UML2!Operation(
+			name <- 'disable backgroundBehaviours')
+	do{
+		thisModule.SchedulerInt <- scheInt;
+		pack.packagedElement <- pack.packagedElement->including(scheInt);
+	}
+}
+
+-- Rule that create the test class wich implements the "Timer RT" interface
+rule createTimer(pack: UML2!Package){
+	to tClass: UML2!Class(
+		name <- 'TimerRT',
+		ownedOperation <- Set{st, stp, rd},
+		ownedAttribute <- Set{ir, stit, spit, rdit}),
+	
+		ir: UML2!Property(
+			name<- 'isRunning',
+			type<- thisModule.booleanType),
+			
+		stit: UML2!Property(
+			name<- 'startInteferenceTime',
+			type<- thisModule.TimeType),
+		
+		spit: UML2!Property(
+			name<- 'stopInteferenceTime',
+			type<- thisModule.TimeType),
+		
+		rdit: UML2!Property(
+			name<- 'readInteferenceTime',
+			type<- thisModule.TimeType),
+	
+		st: UML2!Operation(
+			name <- 'start',
+			ownedParameter <- Set{ex}),
+			
+		ex: UML2!Parameter(
+			type <- thisModule.TimeType,
+			name <- 'expire'),
+		
+		stp: UML2!Operation(
+			name <- 'stop'),
+		
+		rd: UML2!Operation(
+			name <- 'read',
+			ownedParameter <- Set{retTm}),
+			
+		retTm: UML2!Parameter(
+			type <- thisModule.TimeType,
+			direction <- #return)
+	do{
+		pack.packagedElement <- pack.packagedElement->including(tClass);
+	}
+}
+
+-- Rule which create the test Context class
+rule createTestContext(pack: UML2!Package){
+	using{
+		SUT_stereo : UML2!Stereotype = thisModule.UTP_RT_Profile.getOwnedStereotypes()->select(str | str.name = 'SUT RT')->first();
+		SUT_Prop : UML2!Property = UML2!Property.allInstancesFrom('OUT')->select(p | p.isStereotypeApplied(SUT_stereo))->first();
+		SUT_Class : UML2!Class = SUT_Prop.type;	
+	
+		TComps : UML2!Property = UML2!Connector.allInstancesFrom('OUT')->select(e | e.getEnds()->exists(p | p.role.type = SUT_Class))->collect(c | c.getEnds()->collect(i | i.role.type)).flatten().excluding(SUT_Class);
+		TContext_stereo : UML2!Stereotype = thisModule.UTP_RT_Profile.getOwnedStereotypes()->select(str | str.name = 'Test Context RT')->first();
+		arb : UML2!Class = UML2!Class.allInstancesFrom('OUT')->select(e | e.name = 'ArbiterRT')->first();
+		sch : UML2!Class = UML2!Class.allInstancesFrom('OUT')->select(e | e.name = 'SchedulerRT')->first();
+	}
+	to tcontext: UML2!Class(
+		name <- SUT_Class.name + '_TestContext',
+		isActive <- true,
+		ownedAttribute <- Set{pri}),
+		
+		sut: UML2!Property(
+			name<- 'SUT'),
+		
+		pri: UML2!Property(
+			name<- 'priority',
+			type <- thisModule.IntegerType,
+			default <- '1000')
+			
+	do{
+		thisModule.SUT <- SUT_Class;
+		tcontext.createInterfaceRealization('', thisModule.ArbiterInt);
+		tcontext.createInterfaceRealization('', thisModule.SchedulerInt);
+		
+		for (tc in TComps){
+			self.createTestComponent(pack, tc, tcontext);
+		}
+		self.createSUTSubClass(pack);
+		sut.type <- thisModule.SubSUT;
+		tcontext.ownedAttribute <- tcontext.ownedAttribute->including(sut); 
+		
+		for (tc in thisModule.TestComponents){
+			self.createCompositeStructureDiagramConections (tcontext, tc);
+		}
+		pack.packagedElement <- pack.packagedElement->including(tcontext);
+		tcontext.applyStereotype(TContext_stereo);
+		thisModule.TContext <- tcontext;
+	}
+}
+
+-- This rule includes the interface called RealTimeOpsproperty 
+rule createRealTimeOpsInterface(pack: UML2!Package){
+	to int: UML2!Interface(
+		name <- 'RealTimeOperations',
+		ownedAttribute <- Set{iit},
+		ownedOperation <- Set{sts, isIn, intr}),
+	
+	iit: UML2!Property(
+		name <- 'interruptInterferenceTime',
+		type <- thisModule.TimeType),
+		
+	sts: UML2!Operation(
+		name <- 'setToState',
+		ownedParameter <- Set{sn}),
+			
+	sn: UML2!Parameter(
+		type <- thisModule.StringType),
+		
+	isIn: UML2!Operation(
+		name <- 'isInState',
+		ownedParameter <- Set{sii, rtb}),
+			
+	sii: UML2!Parameter(
+		type <- thisModule.StringType),
+		
+	rtb: UML2!Parameter(
+		direction <- #return,
+		type <- thisModule.booleanType),
+		
+	intr: UML2!Operation(
+		name <- 'interrupt',
+		ownedParameter <- Set{kd}),
+			
+	kd: UML2!Parameter(
+		type <- thisModule.InterruptionKindType)
+		
+	do{
+		thisModule.RealTimeOpsInterface <- int;
+		pack.packagedElement <- pack.packagedElement->including(int);
+	}
+}
+
+
+-- Rule which create the test Component class
+rule createTestComponent(pack: UML2!Package, class: UML2!Class, tcontext: UML2!Class){
+	using{
+		TComponent_stereo : UML2!Stereotype = thisModule.UTP_RT_Profile.getOwnedStereotypes()->select(str | str.name = 'Test Component RT')->first();
+	}
+	to tcomponent: UML2!Class(
+		name <- class.name + '_Emulator',
+		ownedAttribute <- Set{execT}),
+	
+	
+		execT: UML2!Property(
+			name<- 'executionTime',
+			type<- thisModule.TimeType)
+	do{
+		tcomponent.createInterfaceRealization('', thisModule.RealTimeOpsInterface);
+		tcomponent.createGeneralization(class);
+		for (o in class.ownedOperation){
+			self.createOperation(tcomponent, o);
+		}	
+		pack.packagedElement <- pack.packagedElement->including(tcomponent);
+		thisModule.TestComponents <- thisModule.TestComponents->including(tcomponent);
+		tcomponent.applyStereotype(TComponent_stereo);
+	}
+}
+
+-- Rule that creates an operation based on the original operation
+rule createOperation(tc: UML2!Class, op: UML2!Operation){
+	to opera: UML2!Operation(
+		name <- op.name)
+	
+	do{
+		tc.ownedOperation <- tc.ownedOperation->including(opera);
+	}
+}
+
+-- Rule which create the extension class of the SUT
+rule createSUTSubClass(pack: UML2!Package){
+	using{
+		SUT_stereo : UML2!Stereotype = thisModule.UTP_RT_Profile.getOwnedStereotypes()->select(str | str.name = 'SUT RT')->first();
+	}
+	to subSUT: UML2!Class(
+		name<- thisModule.SUT.name + '_Extended',
+		ownedAttribute <- Set{mv, exT}),--, proc, prio, exT}),
+		
+	mv: UML2!Property(
+		name<- 'mainVariables',
+		type<- thisModule.CollectionType),
+
+	exT: UML2!Property(
+			name<- 'executionTime',
+			type<- thisModule.TimeType)
+	do{
+		subSUT.createGeneralization(thisModule.SUT);
+		subSUT.createInterfaceRealization('', thisModule.RealTimeOpsInterface);
+		
+		for (tc in thisModule.TestComponents){
+			self.createTestComponentPropertys(subSUT, tc);
+			self.addSubSUTPropertyToTestComponents(subSUT, tc);
+		}
+		for (tc in thisModule.TestComponents){
+			self.createAssociationsBetweenTContextAndTCompo (subSUT, tc, pack);
+		}
+		
+		pack.packagedElement <- pack.packagedElement->including(subSUT);
+		subSUT.applyStereotype(SUT_stereo);
+		thisModule.SubSUT <- subSUT;
+	}
+}
+
+rule addSubSUTPropertyToTestComponents(sub_SUT: UML2!Class, tc: UML2!Class){
+	to assSS_TC: UML2!Property(
+		visibility<- #private,
+		type<- sub_SUT)
+	do{
+		tc.ownedAttribute <- tc.ownedAttribute->including(assSS_TC);
+	}
+}
+
+rule createTestComponentPropertys(subSUT: UML2!Package, tc: UML2!Class){
+	to prop: UML2!Property(
+		visibility <- #private,
+		type <- tc)
+	
+	do{
+		subSUT.ownedAttribute <- subSUT.ownedAttribute->including(prop);
+	}		
+}
+
+rule createAssociationsBetweenTContextAndTCompo (subSUT: UML2!Class, tcomp:UML2!Class, pack : UML2!Package){
+	using{
+		subSUTProp: UML2!Property = tcomp.ownedAttribute->select(p | p.type.name = subSUT.name)->first();
+		tcompProp: UML2!Property = subSUT.ownedAttribute->select(p | p.type.name = tcomp.name)->first(); 
+	}
+	to ass: UML2!Association(
+		memberEnd <- Set{subSUTProp, tcompProp})
+	
+	do{
+		pack.packagedElement <- pack.packagedElement->including(ass);
+	}
+}
+
+rule createCompositeStructureDiagramConections(tcx: UML2!Class, tcomp: UML2!Class){
+	using{
+		propTC: UML2!Property = tcomp.ownedAttribute->select(p | p.type.name = thisModule.SubSUT.name)->first();
+		propSUT: UML2!Property = thisModule.SubSUT.ownedAttribute->select(p | p.type.name = tcomp.name)->first();
+	}
+	to pp: UML2!Property(
+		visibility<- #private,
+		type<- tcomp),
+		
+	cn: UML2!Connector(
+		end <- Set{ce1, ce2}),
+	
+	ce1: UML2!ConnectorEnd(
+		role <- propTC ),
+		
+	ce2: UML2!ConnectorEnd(
+		role <- propSUT)
+	do{
+		tcx.ownedAttribute <- tcx.ownedAttribute->including(pp);
+		tcx.ownedConnector <- tcx.ownedConnector->including(cn); 
+	}
+}
+
+
+-------------------------------------------Test Case Generation -------------------------------
+rule testCaseGeneration (sm: UML2!StateMachine, pack: UML2!Package){
+	using{
+		r : UML2!Region = sm.region->first();
+		trans: Set(UML2!Transition)= r.getTransitions();
+		transBeg: UML2!Transition = trans->select(t|t.source.oclIsTypeOf(UML2!Pseudostate))->select(p | p.source.kind = #initial)->first();
+	}
+	to 
+	col: UML2!Collaboration(
+		ownedBehavior <- Set{},
+		name <- 'TestCases'
+	)
+	
+	do{
+		thisModule.transitions <- trans;
+		thisModule.collabTest <- col;
+		self.generate(transBeg, pack);
+		pack.packagedElement <- pack.packagedElement->including(col);
+		for (tc in col.ownedBehavior){
+			tc.toString().println();
+			self.createOperationInTContext(tc.name);
+			--thisModule.TContext.ownedOperation <- 
+		}	
+	}
+}
+
+rule createOperationInTContext (name: String){
+	to op: UML2!Operation(
+		name <- name)
+		
+	do{
+		thisModule.TContext.ownedOperation <- thisModule.TContext.ownedOperation->including(op);
+	}
+}
+	
+rule generate(ini: UML2!Transition, pack: UML2!Package){
+	using{
+		next: UML2!Transition = '';
+		opSetTo: UML2!Operation = UML2!Operation->allInstances()->select(o | o.name = 'setToState')->first();
+		opIsIn: UML2!Operation = UML2!Operation->allInstances()->select(o | o.name = 'isInState')->first();
+	}
+	to
+	int: UML2!Interaction(
+		lifeline <- Set{llTx, llSut},
+		fragment <- Set{},
+		message <- Set{},
+		name <- 'testCase'+ thisModule.numberTC.toString(),
+		ownedAttribute <- Set{propSut, propTx}
+	),
+	
+	llTx: UML2!Lifeline(
+		represents <- propTx),
+		
+	propTx: UML2!Property(
+		visibility <- #private,
+		type <- thisModule.TContext),
+	
+	llSut: UML2!Lifeline(
+		represents <- propSut),
+		
+	propSut: UML2!Property(
+		visibility <- #private,
+		type <- thisModule.SubSUT),
+		
+	mst: UML2!Message(
+		sendEvent <- mos1,
+		receiveEvent <- mos2),
+	
+	mos1: UML2!MessageOccurrenceSpecification( 
+		covered <- llTx,
+		message <- mst
+	),
+	
+	mos2: UML2!MessageOccurrenceSpecification( 
+		covered <- llSut,
+		message <- mst,
+		event <- ce
+	),
+	
+	ce: UML2!CallEvent(
+		operation <- opSetTo
+	),
+	
+	min: UML2!Message(
+		sendEvent <- mis1,
+		receiveEvent <- mis2),
+	
+	mis1: UML2!MessageOccurrenceSpecification( 
+		covered <- llTx,
+		message <- min
+	),
+	
+	mis2: UML2!MessageOccurrenceSpecification( 
+		covered <- llSut,
+		message <- min,
+		event <- ceis
+	),
+	
+	ceis: UML2!CallEvent(
+		operation <- opIsIn
+	),
+	
+	mR: UML2!Message(
+		sendEvent <- mR1,
+		receiveEvent <- mR2,
+		name <- 'true',
+		messageSort <- #reply), --UML2!MessageSort.getByName('Reply'),
+	
+	mR1: UML2!MessageOccurrenceSpecification( 
+		covered <- llSut,
+		message <- mR
+	),
+	
+	mR2: UML2!MessageOccurrenceSpecification( 
+		covered <- llTx,
+		message <- mR,
+		event <- ceR
+	),
+	
+	ceR: UML2!CallEvent(
+		--operation <- opIsIn
+	)
+	
+	do{
+		--- Verifies if there is a guard. If it's true, then the messages will be included on a Combinated Fragment
+		thisModule.isInOperator <- false;
+		if (ini.getGuard().oclIsUndefined() = false){
+			self.createCombinedFragment(int, ini, OrderedSet{mos1, mos2, mis1, mis2, mR1, mR2});
+		}else
+			int.fragment <- int.fragment->including(mos1)->including(mos2)->including(mis1)->including(mis2)->including(mR1)->including(mR2); 
+		
+		int.message <- int.message->including(mst)->including(min)->including(mR);
+		thisModule.numberTC <- thisModule.numberTC + 1;
+		
+		--- If the transition has as source the Initial pseudostate
+		if (ini.source.oclIsKindOf(UML2!Pseudostate)){
+			self.createOpaqueExpression(ini, mst, 'INI');
+			self.createOpaqueExpressionIsIn(ini, min, 'INI');
+		}else{
+			self.createOpaqueExpression(ini, mst, '');
+			self.createOpaqueExpressionIsIn(ini, min, '');
+		}
+		
+		--- Stop condition for the recursivity
+		if (thisModule.transitions.size() > 0){	
+			self.getAPath(ini, int, pack, thisModule.Operator);
+		}
+		thisModule.collabTest.ownedBehavior <- thisModule.collabTest.ownedBehavior->including(int);
+	}
+}
+
+--- Rule that returns a path from the state machine diagram through its transitions (recursive rule) 
+rule getAPath(trans: UML2!Transition, int: UML2!Interaction, pack: UML2!Package, opr: UML2!InteractionOperand){
+	using{
+		lfSut : UML2!Lifeline = int.lifeline->select(l | l.represents.type.name = thisModule.SubSUT.name)->first();
+		lfCtx : UML2!Lifeline = int.lifeline->select(l | l.represents.type.name = thisModule.TContext.name)->first();
+	
+		op: UML!Transition = '';
+		next: UML2!Transition = '';
+		
+		opIsIn: UML2!Operation = UML2!Operation->allInstances()->select(o | o.name = 'isInState')->first();
+	}
+	to m: UML2!Message(
+		sendEvent <- mos1,
+		receiveEvent <- mos2
+	),
+	
+	mos1: UML2!MessageOccurrenceSpecification( 
+		covered <- lfCtx,
+		message <- m
+	),
+	
+	mos2: UML2!MessageOccurrenceSpecification( 
+		covered <- lfSut,
+		message <- m
+	),
+	
+	min: UML2!Message(
+		sendEvent <- mis1,
+		receiveEvent <- mis2),
+	
+	mis1: UML2!MessageOccurrenceSpecification( 
+		covered <- lfCtx,
+		message <- min
+	),
+	
+	mis2: UML2!MessageOccurrenceSpecification( 
+		covered <- lfSut,
+		message <- min,
+		event <- ceis
+	),
+	
+	ceis: UML2!CallEvent(
+		operation <- opIsIn
+	),
+	
+	mR: UML2!Message(
+		sendEvent <- mR1,
+		receiveEvent <- mR2,
+		name <- 'true',
+		messageSort <- #reply),
+	
+	mR1: UML2!MessageOccurrenceSpecification( 
+		covered <- lfSut,
+		message <- mR
+	),
+	
+	mR2: UML2!MessageOccurrenceSpecification( 
+		covered <- lfCtx,
+		message <- mR,
+		event <- ceR
+	),
+	
+	ceR: UML2!CallEvent(
+	)
+	
+	do{
+		next <- thisModule.transitions->select(t | t.source.name = trans.target.name)->first();
+		self.createOpaqueExpressionIsIn_2(trans, min, '');
+		
+		thisModule.transitions <- thisModule.transitions->excluding(trans);
+		if (thisModule.isInOperator = true){
+			opr.fragment <- opr.fragment->including(mos1)->including(mos2)->append(mis1)->append(mis2)->append(mR1)->append(mR2);
+		}else{ 
+			int.fragment <- int.fragment->including(mos1)->including(mos2)->append(mis1)->append(mis2)->append(mR1)->append(mR2);
+		}
+		int.message <- int.message->including(m)->including(min)->including(mR);
+			
+		if (next.oclIsUndefined() = false){			
+			if (next.getGuard().oclIsUndefined() = false){
+				self.generate(next, pack);
+			}
+			else{
+				self.getAPath(next, int, pack, thisModule.Operator);
+			}
+		}else{
+			if (thisModule.transitions->size()>0)
+				self.generate(thisModule.transitions->first(), pack);
+		}
+		
+		if (trans.getTriggers().size() > 0){ 
+			op <- trans.getTriggers()->first().event.operation;
+			self.createEvent(op, mos2);
+		}
+	}
+}
+
+--- Rule that create a Combined Fragment with the guard condition as an Opt fragment
+rule createCombinedFragment(int: UML2!Interaction, trans: UML!Transition, mos: Set(UML2!MessageOccurrenceSpecification)){
+	to cf: UML2!CombinedFragment(
+		interactionOperator <- #opt,
+		operand <- op),
+		
+	op: UML2!InteractionOperand(
+		fragment <- Set{},
+		guard <- gd),
+		
+	gd: UML2!InteractionConstraint(
+		specification <- ls),
+	
+	ls: UML2!LiteralString(
+		value <- trans.getGuard().specification.stringValue())
+		
+	do{
+		for (m in mos){
+			op.fragment <- op.fragment->append(m);
+		}
+		thisModule.Operator <- op;
+		thisModule.isInOperator <- true;
+		int.fragment <- int.fragment->including(cf); 
+	}
+}
+
+--- Rule that create the Opaque expression that refers to the operation IsInState
+rule createOpaqueExpressionIsIn(tra: UML2!Transition, m:UML2!Message, msg: String){
+	to sl: UML2!OpaqueExpression
+	
+	do{
+		if (msg = 'INI')
+			sl.body <- 'INITIAL';
+		else sl.body <- tra.source.name;
+		m.argument <- sl;
+	}
+}
+
+rule createOpaqueExpressionIsIn_2(tra: UML2!Transition, m:UML2!Message, msg: String){
+	to sl: UML2!OpaqueExpression
+	
+	do{
+		if (msg = 'INI')
+			sl.body <- 'INITIAL';
+		else sl.body <- tra.target.name;
+		m.argument <- sl;
+	}
+}
+
+rule createOpaqueExpression(tra: UML2!Transition, m:UML2!Message, msg: String){
+	to sl: UML2!OpaqueExpression
+	do{
+		if (msg = 'INI')
+			sl.body <- 'INITIAL';
+		else sl.body <- tra.source.name;
+		m.argument <- sl;
+	}
+}
+
+rule createEvent(op: UML2!Operation, mos: UML2!MessageOccurrenceSpecification){
+	to ce: UML2!CallEvent(
+		operation <- op
+	)
+	
+	do{
+		mos.event <- ce;	
+	}
+}
