@@ -1,0 +1,1369 @@
+module PITM2PSTM;
+
+create OUT : C from IN : UML2, ProfileRTD : UML2, ProfileUTP_RT: UML2;
+
+helper def : RTD_Profile : UML2!Profile = '';
+
+helper def : UTP_RT_Profile : UML2!Profile = UML2!Profile.allInstances()->select(e | e.name = 'UTP RT')->first();
+helper def : TComponents : Set(UML2!Class) = '';
+helper def : TContext : UML2!Class = UML2!Class->allInstances()->select(c | c.isStereotypeApplied(thisModule.UTP_RT_Profile.getOwnedStereotypes()->select(str | str.name = 'Test Context RT')->first()))->first();
+helper def : handles: Set(C!SimpleVariableDeclaration) = Set{};
+helper def : variables: Set(C!Declaration) = Set{};
+helper def : numberOfCases : Integer = 1;
+
+---- C files ---
+helper def : mainFile : C!C_Unit = '';
+helper def : TDFile : C!C_Unit = '';
+helper def : TCFile : C!C_Unit = '';
+helper def : SUTIntFile : C!C_Unit = '';
+----------------
+---- C Types ---
+helper def : shortType : C!Short = '';
+helper def : intType : C!Int = '';
+helper def : charType : C!Char = '';
+helper def : voidType : C!Void = '';
+helper def : InheritedTypes : Set(C!Inherited) = Set{};
+
+rule pack {
+	from tPack : UML2!Package (tPack.name = 'TestPackage') 
+	using{
+		TComponent_stereo : UML2!Stereotype = thisModule.UTP_RT_Profile.getOwnedStereotypes()->select(str | str.name = 'Test Component RT')->first();
+		TComponents: Set(UML2!Class) = UML2!Class->allInstances()->select(c | c.isStereotypeApplied(TComponent_stereo));
+	}
+	to testProg: C!Program(
+		description <- 'C files that represents the test architecture for the SUT')
+	
+	do{
+		--thisModule.UTP_RT_Profile<- UML2!Profile.allInstances()->select(e | e.name = 'UTP RT')->first();
+		thisModule.TComponents <- TComponents;
+		
+		self.createCTypes();
+		self.createCFiles(testProg);
+		self.mainFile();
+		self.TDFile();
+		self.TestCaseFile();
+		self.SUTInterfaceFile();
+		
+		self.createHFiles(testProg);
+	}
+}
+
+--- rule that creates all the types
+rule createCTypes(){
+	to short: C!Short,
+	
+	void: C!Void,
+	
+	int: C!Int,
+
+	char: C!Char
+	do{
+		thisModule.shortType <- short;
+		thisModule.voidType <- void;
+		thisModule.intType <- int;
+		thisModule.charType <- char;
+	}
+}
+
+--- Rule that creates the C Files
+rule createCFiles(prog: C!Program){
+	to mainFile: C!C_Unit(
+		name <- 'main'),
+		
+	TDFile: C!C_Unit(
+		name <- 'TestDriver'),
+		
+	TCFile: C!C_Unit(
+		name <- 'TestCase'),
+		
+	SUTInterFile: C!C_Unit(
+		name <- 'SUTInterface')
+	
+	do{
+		thisModule.mainFile <- mainFile;
+		thisModule.TDFile <- TDFile;
+		thisModule.TCFile <- TCFile;
+		thisModule.SUTIntFile <- SUTInterFile;
+		prog.file <- prog.file->including(mainFile)->including(TDFile)->including(TCFile)->including(SUTInterFile); 
+	}
+}
+
+-----------------------------------------------------MAIN--------------------------------------------
+--- Rule that creates the main File
+rule mainFile(){
+	to db: C!DeclarationsBlock(
+		name <- 'includes',
+		directive <- OrderedSet{stH, FRTOSH, TDH, SUTH, AEUH, AETH}),
+	
+	stH: C!Include(
+		name <- '<stdio.h>'),
+	
+	FRTOSH: C!Include(
+		name <- '"FreeRTOS.h"'),
+	
+	TDH: C!Include(
+		name <- '"TestDriver.h"'),
+	
+	--- the .h file related to the SUT
+	SUTH: C!Include(
+		name <- '"alarme.h"'),
+		
+	--- the .h file related to the testing API
+	AEUH: C!Include(
+		name <- '"ActualEventUtil.h"'),
+	
+	AETH: C!Include(
+		name <- '"ActualEventTester.h"'),
+		
+	mainFunc: C!Function(
+		name <- 'main',
+		return <- thisModule.shortType,
+		body <- body
+	),
+	
+	body: C!Block(
+		element <- OrderedSet{vst, gtc, ret, shortLit}
+	),
+	
+	vst: C!FunctionCall(
+		name <- 'vStartTest'),
+	
+	gtc: C!FunctionCall(
+		name <- 'getch'),
+	
+	ret: C!ReturnCommand(
+		expression <- shortLit),
+		
+	shortLit: C!ShortLiteral(
+		value <- 0)
+		
+	do{
+		thisModule.mainFile.toString().println();
+		thisModule.mainFile.elements <- thisModule.mainFile.elements->including(db);
+		thisModule.mainFile.elements <- thisModule.mainFile.elements->including(mainFunc);
+	}
+}
+
+
+------------------------------------------- TEST DRIVER ---------------------------------------------
+--- Rule that creates the Test Driver file
+rule TDFile(){
+	to db: C!DeclarationsBlock(
+		name <- 'includes',
+		directive <- OrderedSet{stH, stlH, strH, FRTOSH, tskH, semH}), 
+	
+	stH: C!Include(
+		name <- '<stdio.h>'),
+		
+	stlH: C!Include(
+		name <- '<stdlib.h>'),
+		
+	strH: C!Include(
+		name <- '<string.h>'),
+	
+	FRTOSH: C!Include(
+		name <- '"FreeRTOS.h"'),
+	
+	tskH: C!Include(
+		name <- '"task.h"'),
+		
+	semH: C!Include(
+		name <- '"semphr.h"'),
+			
+	--- the .h file related to the testing API
+	db2: C!DeclarationsBlock(
+		name <- 'includes testing API',
+		directive <- OrderedSet{AEUH, AETH}),
+	
+	AEUH: C!Include(
+		name <- '"ActualEventUtil.h"'),
+	
+	AETH: C!Include(
+		name <- '"ActualEventTester.h"'),
+		
+	--- the .h file related to the test execution API
+	db3: C!DeclarationsBlock(
+		name <- 'includes testing execution API',
+		directive <- OrderedSet{SUTIntH, TCH, TDH}),
+	
+	SUTIntH: C!Include(
+		name <- '"SUTInterface.h"'),
+	
+	TCH: C!Include(
+		name <- '"TestCase.h"'),
+		
+	TDH: C!Include(
+		name <- '"TestDriver.h"'),
+	
+	--- Function prototypes ---
+	db4: C!DeclarationsBlock(
+		name <- 'Prototypes',
+		declaration <- OrderedSet{ctc, cotc}),
+	
+	ctc: C!PrototypeFunctionDeclaration(
+		name <- 'createTestContext',
+		modifier <- #static,
+		type <- thisModule.voidType),
+		
+	cotc: C!PrototypeFunctionDeclaration(
+		name <- 'createOurTestComponents',
+		modifier <- #static,
+		type <- thisModule.voidType),
+		
+	db5: C!DeclarationsBlock(
+		name <- 'Prototypes Test Components tasks',
+		declaration <- OrderedSet{}),
+	
+	db6: C!DeclarationsBlock(
+		name <- 'Handles',
+		declaration <- OrderedSet{}),
+		
+	db7: C!DeclarationsBlock(
+		name <- 'Prototypes Declarations',
+		declaration <- OrderedSet{vtc}),
+		
+	vtc: C!PrototypeFunctionDeclaration(
+		name <- 'vTestConfiguration',
+		modifier <- #static,
+		type <- thisModule.voidType)
+		
+	do{ 
+		thisModule.TDFile.elements <- thisModule.TDFile.elements->including(db)->including(db2)->including(db3)->including(db4)->including(db5)->including(db6)->including(db7);
+		
+		for (tcomp in thisModule.TComponents){
+			self.createTComponentsPrototypes(tcomp, db5);
+		}
+		thisModule.TContext.toString().println();
+		self.createTaskHandles(thisModule.TContext, db6);
+		for (tcomp in thisModule.TComponents){
+			self.createTaskHandles(tcomp, db6);
+		}
+		
+		self.createvStartTestFunction();
+		self.createvTestConfigurationFunction();
+		self.createScheduler();
+		self.createArbiter();
+		self.createTestContextTaskStuffs();
+		self.testComponentAuxiliarDefinition();
+		self.testComponentDefinition();
+	}
+	
+}
+
+rule createTComponentsPrototypes(tcomp: UML2!Class, db: C!DeclarationsBlock){
+	to compP: C!PrototypeFunctionDeclaration(
+		name <- 'v'+ tcomp.name + 'Task_TComponent',
+		modifier <- #static,
+		type <- thisModule.voidType,
+		ownedParameter <- OrderedSet{pvPar}),
+		
+		pvPar: C!SimpleVariableDeclaration(
+			name <- 'pvParameters',
+			type <- thisModule.voidType,
+			isAPointer <- true)
+			
+	do{
+		thisModule.variables<-thisModule.variables->including(compP); 
+		db.declaration <- db.declaration->including(compP);
+	}
+}
+
+rule createTaskHandles(tcomp: UML2!Class, db: C!DeclarationsBlock){
+	to hd: C!SimpleVariableDeclaration(
+		name <- 'v'+tcomp.name+'Handle',
+		type <- th),
+		
+	th: C!FromHeader(
+		name <- 'xTaskHandle')
+	
+	do{
+		db.declaration <- db.declaration->including(hd);
+		thisModule.handles <- thisModule.handles->including(hd); 
+	}
+}
+
+rule createvStartTestFunction(){
+	to vst: C!Function(
+		name <- 'vStartTest',
+		body <- bl),
+		
+	bl: C!Block(
+		element <- OrderedSet{vtc, vtss}),
+		
+	vtc: C!FunctionCall(
+		name <- 'vTestConfiguration'),
+		
+	vtss: C!FunctionCall(
+		name <- 'vTaskStartScheduler')
+	
+	do{
+		thisModule.TDFile.elements <- thisModule.TDFile.elements->including(vst);
+	}
+}
+
+rule createvTestConfigurationFunction(){
+	to vtc: C!Function(
+		name <- 'vTestConfiguration',
+		body <- bl),
+		
+	bl: C!Block(
+		element <- OrderedSet{ctc, cotc, css}),
+		
+	ctc: C!FunctionCall(
+		name <- 'createTestContext'),
+		
+	cotc: C!FunctionCall(
+		name <- 'createOurTestComponents'),
+		
+	css: C!FunctionCall(
+		name <- 'createSUTStructures')
+	
+	do{
+		thisModule.TDFile.elements <- thisModule.TDFile.elements->including(vtc);
+	}
+}
+
+rule createScheduler(){
+	to db: C!DeclarationsBlock(
+		name <- 'Scheduler Declaration',
+		declaration <- OrderedSet{tcepq, foq, qs, dpq, epq}),
+	
+	tcepq: C!SimpleVariableDeclaration(
+		name <- 'testCaseExecutionPriorityQueue',
+		isAPointer <- true,
+		type <- thisModule.intType),
+	
+	foq: C!SimpleVariableDeclaration(
+		name <- 'firstOnQueue',
+		type <- thisModule.intType,
+		initializer <- intL),
+	
+	intL: C!IntLiteral(
+		value <- 0),
+		
+	qs: C!SimpleVariableDeclaration(
+		name <- 'queueSize',
+		type <- thisModule.intType,
+		initializer <- intL),
+		
+	dpq: C!PrototypeFunctionDeclaration(
+		name <- 'dequeuePriorityQueue',
+		type <- thisModule.intType),
+		
+	epq: C!PrototypeFunctionDeclaration(
+		name <- 'enqueuePriorityQueue',
+		type <- thisModule.intType,
+		ownedParameter <- OrderedSet{prio}),
+		
+	prio: C!SimpleVariableDeclaration(
+		name <- 'priority',
+		type <- thisModule.intType),
+		
+	fb: C!FunctionsBlock(
+		name <- 'Priority Queue routines',
+		function <- OrderedSet{dpQueue, epQueue, schFunc}),
+		
+	dpQueue: C!Function(
+		name <- 'dequeuePriorityQueue',
+		return <- thisModule.intType,
+		body <- bockDp),
+		
+	bockDp: C!Block(
+		element <- OrderedSet{ifCmd}),
+		
+	ifCmd: C!IfCommand(
+		condition <- ccExp,
+		thenBlock <- blockThen,
+		elseBlock <- blockElse),
+		
+	ccExp: C!ComposedConditionalExpression(
+		operator <- #GREATER,
+		term <- OrderedSet{op1, op2}),
+		
+	op1: C!BinaryArithmeticExpression(
+		operator <- #MINUS,
+		operand <- acessQS,
+		extraOperand <- acessFQ),
+	
+	acessQS: C!VariableAccess(
+		name <- 'queueSize',
+		variable <- qs),
+	
+	acessFQ: C!VariableAccess(
+		name <- 'firstOnQueue',
+		variable <- foq),
+	
+	acessFOQ: C!VariableAccess(
+		name <- 'firstOnQueue',
+		variable <- foq),
+		
+	op2: C!IntLiteral(
+		value <- 0),
+		
+	blockThen: C!Block(
+		element <- Set{ret1}),
+		
+	ret1: C!ReturnCommand(
+		expression <- arrAcss),
+		
+	arrAcss: C!ArrayAccess(
+		name <- 'testCaseExecutionPriorityQueue',
+		index <- modExpr),
+		
+	modExpr: C!BinaryArithmeticExpression(
+		operator <- #MODULE,
+		operand <- artFOQ,
+		extraOperand <- utpMAX),
+		
+	artFOQ: C!UnaryArithmeticExpression(
+		operand <- acessFOQ,
+		operator <- #PLUS_PLUS),
+	
+	utpMAX: C!VariableAccess(
+		name <- 'utpMAX_SIZE_FLOW_QUEUE'),
+		--variable <- ),
+		
+	blockElse: C!Block(
+		element <- Set{ret2}),
+		
+	ret2: C!ReturnCommand(
+		expression <- minusOne),
+		
+	minusOne: C!UnaryArithmeticExpression(
+		operator <- #MINUS,
+		operand <- oneLit),
+		
+	oneLit: C!IntLiteral(
+		value <- 1),
+		
+	epQueue: C!Function(
+		name <- 'enqueuePriorityQueue',
+		return <- thisModule.voidType,
+		ownedParameter <- prioP,
+		body <- bockEp),
+	
+	prioP: C!SimpleVariableDeclaration(
+		name <- 'priority',
+		type <- thisModule.intType),
+		
+	bockEp: C!Block(
+		element <- OrderedSet{ifCmd2}),
+		
+	ifCmd2: C!IfCommand(
+		condition <- ccExp2,
+		thenBlock <- blockThen2),
+		
+	ccExp2: C!ComposedConditionalExpression(
+		operator <- #LESS,
+		term <- OrderedSet{op12, utpMAX2}),
+		
+	op12: C!BinaryArithmeticExpression(
+		operator <- #MINUS,
+		operand <- acessQS2,
+		extraOperand <- acessFOQ2),
+		
+	utpMAX2: C!VariableAccess(
+		name <- 'utpMAX_SIZE_FLOW_QUEUE'),
+		--variable <- ),
+	
+	acessQS2: C!VariableAccess(
+		name <- 'queueSize',
+		variable <- qs),
+	
+	acessFOQ2: C!VariableAccess(
+		name <- 'firstOnQueue',
+		variable <- foq),
+		
+	blockThen2: C!Block(
+		element <- Set{ret12}),
+		
+	ret12: C!Assignment(
+		id <- arrAcss2,
+		expression <- prioAcc),
+		
+	arrAcss2: C!ArrayAccess(
+		name <- 'testCaseExecutionPriorityQueue',
+		index <- modExpr2),
+		
+	modExpr2: C!BinaryArithmeticExpression(
+		operator <- #MODULE,
+		operand <- acessQS,
+		extraOperand <- utpMAX),
+		
+	prioAcc: C!VariableAccess(
+		name <- 'priority',
+		variable <- prioP),
+		
+	schFunc: C!Function(
+		name <- 'vScheduler',
+		return <- thisModule.voidType,
+		ownedParameter <- tcf,
+		body <- bockSch),
+	
+	tcf: C!SimpleVariableDeclaration(
+		name <- 'testCaseFile',
+		isAPointer <- true,
+		type <- thisModule.charType),
+	
+	--------- Algoritmo para determinação das prioridades ------
+	bockSch: C!Block(
+		element <- Set{})
+	
+	do{
+		thisModule.TDFile.elements <- thisModule.TDFile.elements->including(db)->including(fb);
+	}
+}
+
+rule createArbiter(){
+	to db: C!Function(
+		name <- 'xArbiter',
+		ownedParameter <- OrderedSet{tcf, lf},
+		body <- blockArb),
+		
+	tcf: C!SimpleVariableDeclaration(
+		name <- 'testCaseFile',
+		isAPointer <- true,
+		type <- thisModule.charType),
+	
+	lf: C!SimpleVariableDeclaration(
+		name <- 'logFile',
+		isAPointer <- true,
+		type <- thisModule.charType),
+	--- Incluir a implementação default do Arbiter	
+	blockArb: C!Block()
+	
+	do{
+		thisModule.TDFile.elements <- thisModule.TDFile.elements->including(db);-->including(fb);
+	}
+}
+
+rule createTestContextTaskStuffs(){
+	to fb: C!FunctionsBlock(
+		name <- 'Test Context Task',
+		function <- OrderedSet{ctc, stcp, tc}),
+		
+	ctc: C!Function(
+		name <- 'createTestContext',
+		modifier <- #static,
+		return <- thisModule.voidType,
+		body <- ctcBlock),
+		
+	ctcBlock: C!Block(
+		element <- OrderedSet{xtc}),
+	
+	xtc: C!FunctionCall(
+		name <- 'xTaskCreate',
+		argument <- OrderedSet{vtc, tcxStr, tssConst, nullConst, tipVarPlus, tch}),
+		
+	vtc: C!VariableAccess(
+		name <- 'vTestContext'),
+		--variable <- ),
+		
+	tcxStr: C!StringLiteral(
+		value <- 'TestContext'),
+		
+	tssConst: C!ConstantAccess(
+		name <- 'TEST_STACK_SIZE'),
+		--constant <- ),
+		
+	nullConst: C!ConstantAccess(
+		name <- 'NULL'),
+		--constant <- ),
+		
+	tipVarPlus: C!BinaryArithmeticExpression(
+		operand <- tipVar,
+		operator <- #PLUS,
+		extraOperand <- oneLit),
+		
+	tipVar: C!ConstantAccess(
+		name <- 'tskIDLE_PRIORITY'),
+		--variable <- ),
+		
+	oneLit: C!IntLiteral(
+		value <- 1),
+	
+	tch: C!PointerVariableAccess(
+		name <- 'vTestContextHandle',
+		variable <- thisModule.handles->select(v | v.name = 'vTestContextHandle')->first()),
+		
+	stcp: C!Function(
+		name <- 'vSetTestContextPriority',
+		ownedParameter <- OrderedSet{num},
+		return <- thisModule.voidType,
+		body <- stcpBlock),
+		
+	stcpBlock: C!Block(
+		element <- OrderedSet{vtps}),
+	
+	vtps: C!FunctionCall(
+		name <- 'vTaskPrioritySet',
+		argument <- OrderedSet{vtchAc, numbAc}),
+		
+	num: C!SimpleVariableDeclaration(
+		name <- 'number', 
+		type <- thisModule.intType),
+		
+	vtchAc: C!VariableAccess(
+		name <- 'vTestContextHandle',
+		variable <- thisModule.handles->select(v | v.name = 'vTestContextHandle')->first()),
+		
+	numbAc: C!VariableAccess(
+		name <- 'number',
+		variable <- num),
+		
+	tc: C!Function(
+		name <- 'vTestContext',
+		return <- thisModule.voidType,
+		ownedParameter <- OrderedSet{pvP},
+		body <- tcBlock),
+	
+	pvP: C!SimpleVariableDeclaration(
+		name <- 'pvParameters',
+		isAPointer <- true,
+		type <- thisModule.voidType), 
+		
+	tcBlock: C!Block(
+		element <- Set{})
+		
+	do{
+		self.testContextBlock(tcBlock);
+		thisModule.TDFile.elements <- thisModule.TDFile.elements->including(fb);
+	}
+}
+
+rule testContextBlock (block: C!Block){
+	to ijInt: C!SimpleVariableDeclaration(
+		name <- 'i',
+		type <- thisModule.intType,
+		fragment <- Set{jfrag}),
+		
+	jfrag: C!FragmentVariableDeclaration(
+		name <- 'j'),
+		
+	for1: C!ForCommand(
+		body <- for1Block),
+		
+	for1Block: C!Block(
+		element <- Set{for2}),
+		
+	for2: C!ForCommand(
+		inicializer <- iZero,
+		expression <- iLess,
+		updater <- iplpl,
+		body <- for2Block),
+	
+	iZero: C!Assignment(
+		id <- iAcess,
+		expression <- zeroLit),
+	
+	iAcess: C!VariableAccess(
+		name <- 'i',
+		variable <- ijInt),
+		
+	iAcess2: C!VariableAccess(
+		name <- 'i',
+		variable <- ijInt),
+		
+	zeroLit: C!IntLiteral(
+		value <- 0),
+	
+	iLess: C!ComposedConditionalExpression(
+		term <- OrderedSet{iAcc, trLit},
+		operator <- #LESS),
+		
+	iAcc: C!VariableAccess(
+		name <- 'i',
+		variable <- ijInt),
+		
+	trLit: C!IntLiteral(
+		value <- 30000),
+		
+	iplpl: C!UnaryArithmeticExpression(
+		operator <- #PLUS_PLUS,
+		operand <- iAcess2),
+		
+	for2Block: C!Block(
+		element <- Set{for3}),
+		
+	for3: C!ForCommand(
+		inicializer <- jZero,
+		expression <- jLess,
+		updater <- jplpl,
+		body <- for3Block),
+	
+	jZero: C!Assignment(
+		id <- jAcess,
+		expression <- zeroLit2),
+	
+	jAcess: C!VariableAccess(
+		name <- 'j',
+		variable <- jfrag),
+		
+	jAcess2: C!VariableAccess(
+		name <- 'j',
+		variable <- jfrag),
+		
+	zeroLit2: C!IntLiteral(
+		value <- 0),
+	
+	jLess: C!ComposedConditionalExpression(
+		term <- OrderedSet{jAcc, trLit2},
+		operator <- #LESS),
+		
+	jAcc: C!VariableAccess(
+		name <- 'j',
+		variable <- jfrag),
+		
+	trLit2: C!IntLiteral(
+		value <- 30000),
+		
+	jplpl: C!UnaryArithmeticExpression(
+		operator <- #PLUS_PLUS,
+		operand <- jAcess2),
+		
+	for3Block: C!Block,
+	
+	vtc: C!FunctionCall(
+		name <- 'vTestCase',
+		argument <- Set{tcStr, logTcStr}),
+		
+	tcStr: C!StringLiteral(
+		value <- 'TestCase.txt'),
+		
+	logTcStr: C!StringLiteral(
+		value <- 'logTC1'),
+		
+	vtes: C!FunctionCall(
+		name <- 'vTaskEndScheduler')
+	
+	do{
+		block.element <- block.element->including(ijInt)->including(for1)->including(vtc)->including(vtes);
+		
+	}
+}
+
+rule testComponentAuxiliarDefinition(){
+	to db: C!DeclarationsBlock(
+		declaration <- OrderedSet{}),
+		
+	df: C!FunctionsBlock(
+		function <- OrderedSet{})
+		
+	do{
+		for (tc in thisModule.TComponents){
+			self.createTCStateDeclaration(tc, db);
+		}
+		
+		for (tc in thisModule.TComponents){
+			self.createTCSetStateFunction(tc, df);
+		}
+		thisModule.TDFile.elements <- thisModule.TDFile.elements->including(db)->including(df);
+	}
+}
+
+rule createTCStateDeclaration(tcomp: UML2!Class, db: C!DeclarationsBlock){
+	using{
+		ps: C!FromHeader = thisModule.InheritedTypes->collect(t | t.name)->flatten().includes('portSHORT');
+	}
+	to xts: C!SimpleVariableDeclaration(
+		name <- 'x'+tcomp.name+'Task_State',
+		type <- portS,
+		initializer <- zeroLit),
+	
+	portS: C!FromHeader(
+		name <- 'portSHORT'),
+	
+	zeroLit: C!IntLiteral(
+		value <- 0)
+	
+	
+	do{
+		if (not ps){
+			thisModule.InheritedTypes <- thisModule.InheritedTypes->including(portS); 
+		}
+		thisModule.variables <- thisModule.variables->including(xts);
+		db.declaration <- db.declaration->including(xts);
+	}
+}
+
+rule createTCSetStateFunction(tcomp: UML2!Class, fb: C!FunctionsBlock){
+	to setState: C!Function(
+		name <- 'set'+tcomp.name+'Task_State',
+		return <- thisModule.voidType,
+		ownedParameter <- Set{nv},
+		body <- funcBlock),
+		
+	nv: C!SimpleVariableDeclaration(
+		name <- 'newValue',
+		type <- thisModule.InheritedTypes->select(t | t.name = 'portSHORT')->first()),
+		
+	funcBlock: C!Block(
+		element <- OrderedSet{ass}),
+		
+	ass: C!Assignment(
+		id <- ts,
+		expression <- nvAcc),
+	
+	ts: C!VariableAccess(
+		name <- 'x'+tcomp.name+'Task_State',
+		variable <- thisModule.variables->select(v |v.name = 'x'+tcomp.name+'Task_State')->first()),
+	
+	nvAcc: C!VariableAccess(
+		name <- 'newValue',
+		variable <- nv)
+	
+	do{
+		fb.function <- fb.function->including(setState);
+	}
+}
+
+rule testComponentDefinition(){
+	to fb: C!FunctionsBlock(
+		name <- 'TEST COMPONENT definitions',
+		function <- OrderedSet{cotc}),
+		
+	cotc: C!Function(
+		name <- 'createOurTestComponents',
+		return <- thisModule.voidType,
+		modifier <- #static,
+		body <- cotcBlock),
+		
+	cotcBlock: C!Block(
+		element <- OrderedSet{})
+		
+	do{
+		for (tc in thisModule.TComponents){
+			self.createTaskTC(tc, cotcBlock);
+		}
+		
+		for (tc in thisModule.TComponents){
+			self.createFunctionTaskTC(tc, fb);
+		}
+		
+		thisModule.TDFile.elements <- thisModule.TDFile.elements->including(fb);
+	}		
+}
+	
+rule createTaskTC( tc: UML2!Class, block: C!Block){
+	to ctask: C!FunctionCall(
+		name <- 'xTaskCreate',
+		argument <- OrderedSet{vTCAcc, TCname, TSS, xTCts, prio, TCHand}),
+		
+	vTCAcc: C!VariableAccess(
+		name <- 'v'+tc.name+'Task_TComponent',
+		variable <- thisModule.variables->select(v |v.name = vTCAcc.name)->first()),
+	
+	TCname: C!StringLiteral(
+		value <- tc.name),
+	
+	TSS: C!ConstantAccess(
+		name <- 'TEST_STACK_SIZE'),
+	
+	xTCts: C!PointerVariableAccess(
+		name <- 'x'+tc.name+'Task_State',
+		variable <- thisModule.variables->select(v |v.name = xTCts.name)->first()),
+	
+	prio: C!ConstantAccess(
+		name <- 'tskIDLE_PRIORITY'),
+		--constant <-
+		
+	TCHand: C!PointerVariableAccess(
+		name <- 'v'+tc.name+'Handle',
+		variable <- thisModule.handles->select (h | h.name = TCHand.name)->first())
+	
+	do{
+		block.element <- block.element->including(ctask); 
+	}
+}
+
+rule createFunctionTaskTC( tc: UML2!Class, block: C!FunctionsBlock){
+	using{
+		subStr: String = tc.name.substring(1,(tc.name->size()-9));
+		sm: UML2!StateMachine = UML2!StateMachine->allInstances()->select(s | s.name = subStr)->first();
+	}
+	to mst: C!SimpleVariableDeclaration(
+		name <- 'myState',
+		type <- thisModule.InheritedTypes->select(t | t.name = 'portSHORT')->first(),
+		initializer <- cexp),
+		
+	cexp: C!CastExpression(
+		type <- thisModule.InheritedTypes->select(t | t.name = 'portSHORT')->first(),
+		expression <- pvAccess),
+		
+	pvAccess: C!VariableAccess(
+		name <- 'pvParameters',
+		variable <- pvP),
+	
+	tcFunc: C!Function(
+		name <- 'v'+tc.name+'Task_TComponent',
+		ownedParameter <- OrderedSet{pvP},
+		body <- tcBlock),
+	
+	pvP: C!SimpleVariableDeclaration(
+		name <- 'pvParameters',
+		isAPointer <- true,
+		type <- thisModule.voidType),
+		
+	tcBlock: C!Block(
+		element <- Set{forC}),
+		
+	forC: C!ForCommand(
+		body <- forBlock),
+		
+	forBlock: C!Block(
+		element <- Set{switchC, prioSet}),
+		
+	switchC: C!SwitchCommand(
+		variable <- mst,
+		case <- OrderedSet{},--case1},
+		default <- def1),
+		
+	def1: C!DefaultOption(
+		body <- defBlock),
+		
+	defBlock: C!Block(
+		element <- OrderedSet{break2}),
+	
+	break2: C!Break,
+	
+	prioSet: C!FunctionCall(
+		name <- 'vTaskPrioritySet',
+		argument <- OrderedSet{tcHand, dpq}),
+		
+	tcHand: C!VariableAccess(
+		name <- 'v'+tc.name+'Handle',
+		variable <- thisModule.handles->select (h | h.name = tcHand.name)->first()),
+		
+	dpq: C!FunctionCall(
+		name <- 'vTaskPrioritySet')
+
+	do{
+		thisModule.numberOfCases <- 1;
+		for (s in sm.region->first().getSubvertices()->select(s | s.oclIsTypeOf(UML2!Pseudostate)<> true)->select(s | s.oclIsTypeOf(UML2!FinalState)<> true)){
+			self.createCaseFromState(switchC);
+		}
+		block.function <- block.function->including(tcFunc);
+	}
+}
+
+rule createCaseFromState(switch: C!SwitchCommand){
+	to case: C!CaseOption(
+		value <- lit,
+		body <- case1Block),
+		
+	lit: C!IntLiteral(
+		value <- thisModule.numberOfCases),
+		
+	case1Block: C!Block(
+		element <- OrderedSet{break}),
+	
+	break: C!Break
+	
+	do{
+		thisModule.numberOfCases <- thisModule.numberOfCases + 1;
+		switch.case <- switch.case->including(case);
+	}
+	
+}
+
+------------------------------------------- TEST CASE ---------------------------------------------
+--- Rule that creates the Test Case file
+rule TestCaseFile(){
+	to db: C!DeclarationsBlock(
+		name <- 'includes',
+		directive <- OrderedSet{stH, stlH}),
+			
+	stH: C!Include(
+		name <- '<stdio.h>'),
+		
+	stlH: C!Include(
+		name <- '<stdlib.h>'),
+		
+	db1: C!DeclarationsBlock(
+		name <- 'includes SO API',
+		directive <- OrderedSet{freeH, taskH}),
+			
+	freeH: C!Include(
+		name <- '"FreeRTOS.h"'),
+		
+	taskH: C!Include(
+		name <- '"task.h"'),
+	
+	db2: C!DeclarationsBlock(
+		name <- 'includes Testing API',
+		directive <- OrderedSet{aeuH, aetH}),
+			
+	aeuH: C!Include(
+		name <- '"ActualEventUtil.h"'),
+		
+	aetH: C!Include(
+		name <- '"ActualEventTester.h"'),
+		
+	db3: C!DeclarationsBlock(
+		name <- 'includes Test execution API',
+		directive <- OrderedSet{SUTIntH, TDH, TCH}),
+			
+	SUTIntH: C!Include(
+		name <- '"SUTInterface.h"'),
+		
+	TDH: C!Include(
+		name <- '"TestDriver.h"'),
+	
+	TCH: C!Include(
+		name <- '"TestCase.h"')
+		
+	do{
+		thisModule.TCFile.elements <- thisModule.TCFile.elements->including(db)->including(db1)->including(db2)->including(db3);
+		self.createVTestCase();
+	}
+}
+
+rule createVTestCase(){
+	to vtc: C!Function(
+		name <- 'vTestCase',
+		return <- thisModule.voidType,
+		ownedParameter <- OrderedSet{tcf, lf},
+		body <- vtcBlock),
+	
+	tcf: C!SimpleVariableDeclaration(
+		name <- 'testCaseFile',
+		type <- thisModule.charType,
+		isAPointer <- true),
+		
+	lf: C!SimpleVariableDeclaration(
+		name <- 'logFile',
+		type <- thisModule.charType,
+		isAPointer <- true),
+		
+	vtcBlock: C!Block(
+		element <- OrderedSet{vsch, opc, vstcp, xlor, xarb}),
+		
+	vsch: C!FunctionCall(
+		name <- 'vScheduler',
+		argument <- OrderedSet{tcfAcc}),
+		
+	tcfAcc: C!VariableAccess(
+		name <- 'testCaseFile',
+		variable <- tcf),
+		
+	opc: C!FunctionCall(
+		name <- 'vOrganizePreConditions',
+		argument <- OrderedSet{tcfAcc0}),
+		
+	tcfAcc0: C!VariableAccess(
+		name <- 'testCaseFile',
+		variable <- tcf),
+	
+	vstcp: C!FunctionCall(
+		name <- 'vSetTestContextPriority',
+		argument <- OrderedSet{dpq}),
+	
+	dpq: C!FunctionCall(
+		name <- 'dequeuePriorityQueue'),
+		
+	xlor: C!FunctionCall(
+		name <- 'xLogObserversResult',
+		argument <- OrderedSet{lfAcc}),
+		
+	lfAcc: C!VariableAccess(
+		name <- 'logFile',
+		variable <- lf),
+	
+	xarb: C!FunctionCall(
+		name <- 'xArbiter',
+		argument <- OrderedSet{tcfAcc2, lfAcc2}),
+		
+	tcfAcc2: C!VariableAccess(
+		name <- 'testCaseFile',
+		variable <- tcf),
+		
+	lfAcc2: C!VariableAccess(
+		name <- 'logFile',
+		variable <- lf)
+		
+	do{
+		thisModule.TCFile.elements <- thisModule.TCFile.elements->including(vtc);	
+	}
+}
+
+------------------------------------------- SUT INTERFACE ---------------------------------------------
+--- Rule that creates the Sut Interface file
+
+rule SUTInterfaceFile(){
+	to db: C!DeclarationsBlock(
+		name <- 'includes',
+		directive <- OrderedSet{stH, stlH}),
+			
+	stH: C!Include(
+		name <- '<stdio.h>'),
+		
+	stlH: C!Include(
+		name <- '<stdlib.h>'),
+		
+	db1: C!DeclarationsBlock(
+		name <- 'includes SO API',
+		directive <- OrderedSet{freeH, taskH}),
+			
+	freeH: C!Include(
+		name <- '"FreeRTOS.h"'),
+		
+	taskH: C!Include(
+		name <- '"task.h"'),
+	
+	db2: C!DeclarationsBlock(
+		name <- 'includes Testing API',
+		directive <- OrderedSet{aeuH, aetH}),
+			
+	aeuH: C!Include(
+		name <- '"ActualEventUtil.h"'),
+		
+	aetH: C!Include(
+		name <- '"ActualEventTester.h"'),
+		
+	db3: C!DeclarationsBlock(
+		name <- 'includes Test execution API',
+		declaration <- OrderedSet{SUTIntH, TDH, TCH}),
+			
+	SUTIntH: C!Include(
+		name <- '"SUTInterface.h"'),
+		
+	TDH: C!Include(
+		name <- '"TestDriver.h"'),
+	
+	TCH: C!Include(
+		name <- '"TestCase.h"'),
+		
+	db4: C!DeclarationsBlock(
+		name <- 'includes Test execution API',
+		directive <- OrderedSet{SUTH}),
+			
+	SUTH: C!Include(
+		name <- '"SUT.h"'),
+		
+	fb: C!FunctionsBlock(
+		name <- 'TEST CONTEXT',
+		function <- OrderedSet{stp, gnp}),
+		
+	stp: C!Function(
+		name <- 'setTestContext_PRIORITY',
+		return <- thisModule.voidType,
+		ownedParameter <- OrderedSet{num},
+		body <- stpBlock),
+		
+	num: C!SimpleVariableDeclaration(
+		name <- 'number',
+		type <- thisModule.intType),
+		
+	stpBlock: C!Block(
+		element <- OrderedSet{vstcp}),
+		
+	vstcp: C!FunctionCall(
+		name <- 'vSetTestContextPriority',
+		argument <- Set{numAcc}),
+		
+	numAcc: C!VariableAccess(
+		name <- 'number',
+		variable <- num),
+		
+	gnp: C!Function(
+		name <- 'getNextPriority',
+		return <- thisModule.intType,
+		body <- gnpBlock),
+		
+	gnpBlock: C!Block(
+		element <- OrderedSet{ret}),
+		
+	ret: C!ReturnCommand(
+		expression <- dpqCall),
+		
+	dpqCall: C!FunctionCall(
+		name <- 'dequeuePriorityQueue')
+	do{
+		thisModule.SUTIntFile.elements <- thisModule.SUTIntFile.elements->including(db)->including(db1)->including(db2)->including(db3)->including(db4)->including(fb);
+		
+	}
+}
+
+
+---------------------------------- .h Files -----------------------------------------
+rule createHFiles(prog: C!Program){
+	to TCH: C!H_Unit(
+		name <- 'TestCase'),
+	
+	SUTIntH: C!H_Unit(
+		name <- 'SUTInterface'),
+	
+	TDH: C!H_Unit(
+		name <- 'TestDriver')
+	
+	do{
+		self.createTCH(TCH);
+		self.createSUTIntH(SUTIntH);
+		self.createTDH(TDH);
+		prog.file <-prog.file->including(TCH)->including(SUTIntH)->including(TDH); 
+	}
+}
+
+rule createTCH(tc: C!H_Unit){
+	to id: C!Ifdef(
+		name <- 'TESTCASE_H_INCLUDED',
+		declaration <- OrderedSet{deftc, vtc, end},
+		end <- end),
+		
+	deftc: C!Define(
+		name <- 'TESTCASE_H_INCLUDED'),
+		
+	vtc: C!PrototypeFunctionDeclaration(
+		name <- 'vTestCase',
+		type <- thisModule.voidType,
+		ownedParameter <- OrderedSet{tcf, lf}),
+		
+	tcf: C!SimpleVariableDeclaration(
+		name <- 'testCaseFile',
+		isAPointer <- true,
+		type <- thisModule.charType),
+	
+	lf: C!SimpleVariableDeclaration(
+		name <- 'logFile',
+		isAPointer <- true,
+		type <- thisModule.charType),
+		
+	end: C!Endif
+	
+	do{
+		tc.declaration <- tc.declaration->including(id); 
+	}
+}
+
+rule createSUTIntH(tc: C!H_Unit){
+	to id: C!Ifdef(
+		name <- 'SUT_INTERFACE_H_INCLUDED',
+		declaration <- OrderedSet{defsi, tcp, tss, umsfq, stcp, gnp, css, end},
+		end <- end),
+		
+	defsi: C!Define(
+		name <- 'SUT_INTERFACE_H_INCLUDED'),
+		
+	tcp: C!Define(
+		name <- 'TEST_CONTEXT_PRIORITY',
+		value <- 'tskIDLE_PRIORITY + 5'),
+	
+	tss: C!Define(
+		name <- 'TEST_STACK_SIZE',
+		value <- '( ( unsigned portSHORT ) configMINIMAL_STACK_SIZE * 2)'),
+		
+	umsfq: C!Define(
+		name <- 'utpMAX_SIZE_FLOW_QUEUE',
+		value <- '15'),
+		
+	stcp: C!PrototypeFunctionDeclaration(
+		name <- 'vSetTestContextPriority',
+		ownedParameter <- OrderedSet{prio},
+		type <- thisModule.voidType),
+		
+	prio: C!SimpleVariableDeclaration(
+		name <- 'priority',
+		type <- thisModule.intType),
+		
+	gnp: C!PrototypeFunctionDeclaration(
+		name <- 'getNextPriority',
+		type <- thisModule.intType),
+		
+	css: C!PrototypeFunctionDeclaration(
+		name <- 'createSUTStructures',
+		type <- thisModule.voidType),
+		
+	end: C!Endif
+	
+	do{
+		tc.declaration <- tc.declaration->including(id); 
+	}
+	
+}
+
+rule createTDH(td: C!H_Unit){
+	to id: C!Ifdef(
+		name <- 'TESTDRIVER_H_INCLUDED',
+		declaration <- OrderedSet{deftc, vst, vtcx, vstp, vs, xa, dp, end},
+		end <- end),
+		
+	deftc: C!Define(
+		name <- 'TESTDRIVER_H_INCLUDED'),
+		
+	vst: C!PrototypeFunctionDeclaration(
+		name <- 'vStartTest',
+		type <- thisModule.voidType),
+		
+	vtcx: C!PrototypeFunctionDeclaration(
+		name <- 'vTestContext',
+		type <- thisModule.voidType,
+		ownedParameter <- OrderedSet{pv}),
+		
+	pv: C!SimpleVariableDeclaration(
+		name <- 'pvParameters',
+		isAPointer <- true,
+		type <- thisModule.voidType),
+		
+	vstp: C!PrototypeFunctionDeclaration(
+		name <- 'vSetTestContextPriority',
+		type <- thisModule.voidType,
+		ownedParameter <- OrderedSet{num}),
+		
+	num: C!SimpleVariableDeclaration(
+		name <- 'number',
+		type <- thisModule.intType),
+		
+	vs: C!PrototypeFunctionDeclaration(
+		name <- 'vScheduler',
+		type <- thisModule.voidType,
+		ownedParameter <- OrderedSet{tcf}),
+		
+	tcf: C!SimpleVariableDeclaration(
+		name <- 'testCaseFile',
+		isAPointer <- true,
+		type <- thisModule.charType),
+		
+	xa: C!PrototypeFunctionDeclaration(
+		name <- 'xArbiter',
+		type <- thisModule.intType,
+		ownedParameter <- OrderedSet{tcf2, lf}),
+		
+	tcf2: C!SimpleVariableDeclaration(
+		name <- 'testCaseFile',
+		isAPointer <- true,
+		type <- thisModule.charType),
+		
+	lf: C!SimpleVariableDeclaration(
+		name <- 'logFile',
+		isAPointer <- true,
+		type <- thisModule.charType),
+		
+	dp: C!PrototypeFunctionDeclaration(
+		name <- 'dequeuePriorityQueue',
+		type <- thisModule.intType),
+		
+	end: C!Endif
+	
+	do{
+		for (tcomp in thisModule.TComponents){
+			self.createTCSetStateProto(tcomp, id);
+		}
+		--id.end <- id.declaration->including(end);
+		td.declaration <- td.declaration->including(id); 
+	}
+}
+
+rule createTCSetStateProto(tcomp: UML2!Class, id: C!Ifdef){
+	to setState: C!PrototypeFunctionDeclaration(
+		name <- 'set'+tcomp.name+'Task_State',
+		type <- thisModule.voidType,
+		ownedParameter <- Set{nv}),
+		
+	nv: C!SimpleVariableDeclaration(
+		name <- 'newValue',
+		type <- thisModule.InheritedTypes->select(t | t.name = 'portSHORT')->first())
+		
+	do{
+		id.declaration <- id.declaration->including(setState); 	
+	}
+}
