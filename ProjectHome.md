@@ -1,0 +1,1 @@
+A tool for automatic generation of Real-Time Test Architectures
